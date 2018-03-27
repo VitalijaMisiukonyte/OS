@@ -1,6 +1,7 @@
 public class RealMachine{
 	private int[] memory = new int[300];
 	
+	private int[] = registers;
 	//Registers
 	private boolean MODE = false;
 	private int PTR = 0;
