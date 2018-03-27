@@ -1,7 +1,7 @@
 public class RealMachine{
 	private int[] memory = new int[300];
 	
-	private int[] = registers;
+	//private int[] = registers;
 	//Registers
 	private boolean MODE = false;
 	private int PTR = 0;
@@ -14,7 +14,7 @@ public class RealMachine{
 	//private int ER = ??
 	
 	//Getters
-	public int getMODE(){
+	public boolean getMODE(){
 		return this.MODE;
 	}
 	

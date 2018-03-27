@@ -17,12 +17,13 @@ public class Memory{
 		this.correct = true;
 		
 		if((address < 4800)&&(address >= 0)){
-			return this.buffer.get(address);
+			//return this.buffer.get(address);
 		}
 		else{
 			this.correct = false;
 			System.out.println("Operation failed");
 		}
+		return this.buffer.get(address);
 	}
 
 	//Metodas, leidziantis irasyti zodi i atminti pagal adresa

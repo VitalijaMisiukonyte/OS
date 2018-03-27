@@ -1,4 +1,4 @@
-#Cia surasysim visas komandas
+//Cia surasysim visas komandas
 //Reiketu sukurti dar viena registra - Stack pointeri. Kadangi nusprendem kad darysim su stacku tai jis bus tikrai reikalingas)
 public class Commands extends VirtualMachine {
 	
