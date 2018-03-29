@@ -1,5 +1,6 @@
 //TO DO Pakeisti viska savaip
-Pakeisti i musu komandas - Edgaras ir Vitalija
+Prideti komandas - Edgaras ir Vitalija
+Komentarai, pakeitimas - DONE--------------
 Pakeisti isvedima (outputa) - Gabrielius
 Parasyt make, sutvarkit warningus - Gabrielius
 Sutvarkyti struktura, ?????? - Rimvydas, Gabrielius
