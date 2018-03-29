@@ -66,3 +66,4 @@ public class Commands extends VirtualMachine {
 	//------------------------Stekines komanos(pushai, popai)---------------
 
 }
+
