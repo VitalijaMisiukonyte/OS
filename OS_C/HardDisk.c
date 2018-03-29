@@ -4,103 +4,97 @@
 #include "Processor.h"
 #include "HardDisk.h"
 
-char programos_antraste[4];
-char antraste_formatas[4] = { 'P', 'R', 'O', 'G' }; 
-char pavadinimas[20];
+char prog_header[4];
+char header_format[4] = { 'P', 'R', 'O', 'G' }; 
+char name[20];
 
-//Palygina 2 char masyvus. Grazina 1, jei abu yra vienodi
-int palyginti_komandas(char* mas1, char* mas2, int ilgis) {
-  int palyginimas = 1, j;
-  for (j = 0; j < ilgis; j++) {
-    if ((palyginimas) && (mas1[j] != mas2[j])) palyginimas = 0;
+//compare_Commands. Paskirtis - masyvu lyginimas
+int compare_Commands(char* array1, char* array2, int length){
+  int comparison = 1, j;
+  for (j = 0; j < length; j++){
+    if ((comparison) && (array1[j] != array2[j])) comparison = 0;
   }
-  return palyginimas;
+  return comparison;
 }
-//------------------------------------------------------------------------------
-//Atidaro faila ir is jo skaito komandas
-void atidaryti_faila(char* failas)
-{
-  char* simb = calloc(sizeof(char), 1);
+
+//openFile - failo atidarymas ir komandu skaitymas
+void openFile(char* current_file){
+  char* character = calloc(sizeof(char), 1);
   
-  int file = open(failas, O_RDONLY, 0); 
+  int file = open(current_file, O_RDONLY, 0); 
    
-  if (file == -1) { 
-    printf("Failo atidaryti neimanoma.\nVM darbo pabaiga.\n");
-    
+  if (file == -1){ 
+    printf("Failed to open file!\nEnd of VM\n");
     exit(1);
   } 
 
-  int bytes = read(file, programos_antraste, 4); 
-  read(file, simb, 1); 
-  *simb = 0;
-  //patikrina, ar teisingai nuroyta programos antraste
-  if (!palyginti_komandas(programos_antraste, antraste_formatas, 4)) {
-    printf("Klaidingai nurodyta programos antraste.\nVM darbo pabaiga.\n");
-    
+  int bytes = read(file, prog_header, 4); 
+  read(file, character, 1); 
+  *character = 0;
+
+  //Headerio tikrinimas
+  if (!compare_Commands(prog_header, header_format, 4)) {
+    printf("Bad header.\nEnd of VM\n");
     exit(1);
   }
   
-  //skaito programos pavadinimas
+  //Komandu pavadinimu skaitymas
   int i = 0; 
-  while (*simb != '\n') {
-    read(file, simb, 1);
-    if (*simb != '\n') {
-      pavadinimas[i] = *simb;
+  while (*character != '\n'){
+    read(file, character, 1);
+    if (*character != '\n'){
+      name[i] = *character;
       i++;
     }
     if (i > 20) { 
-      printf("Programoje nurodytas per ilgas pavadinimas.\nVM darbo pabaiga.\n");
-      
+      printf("Name of command is too long!\nEnd of VM\n");
       exit(1);
     }
   }
   
-  //is isorines atminties nuskaito komandas i atminti
-  nuskaityti_komandas(file); 
+  //Komandu nuskaitymas is isorines atminties i atminti
+  scanCommands(file); 
   
-  //faile nera aprasyta jokiu VM komandu
-  if ((PC == 0) && (atmintis[psl[(PC/10)]-1][(PC%10)] == 0)) {
-    printf("Programoje nera uzrasytu komandu.\nVM darbo pabaiga.\n");
+  //Komandu (ne)buvimo tikrinimas
+  if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
+    printf("There are no commands in programm!\nEnd of VM\n");
     
     exit(1);    
   }  
   
   close(file);
 }
-//------------------------------------------------------------------------------
-void nuskaityti_komandas(int handle) 
-{
-  int blokas = 0, zodis = 0;
-  char pabaiga_formatas[4] = { '.', 'E', 'N', 'D' };
-  char komanda[4];
+
+void scanCommands(int handle){
+  int block = 0, word = 0;
+  char ending_format[4] = { '.', 'E', 'N', 'D' };
+  char command[4];
   
-  //skaitomos komandos is failo
-  while ((read(handle, komanda, 4) != 0) && !palyginti_komandas(komanda, pabaiga_formatas, 4)) { 
+  //Komandu skaitymas is failo
+  while ((read(handle, command, 4) != 0) && !compare_Commands(command, ending_format, 4)){ 
     char s; 
     read(handle, &s, 1);
 
-    char komanda_move[2] = { 'M', 'V' };
-    if (palyginti_komandas(komanda, komanda_move, 2)) { 
-      blokas = komanda[2] - 48;
-      zodis = komanda[3] - 48;
-      if ((blokas > 9) || (blokas < 0)) {
-        printf("Nekorektiskai parasyta komanda (nurodo bloga adresa atmintyje): %c%c%c%c.\nVM darbo pabaiga.\n", komanda[0], komanda[1], komanda[2], komanda[3]);
-        
+    char command_MV[2] = { 'M', 'V' };
+    if (compare_Commands(command, command_MV, 2)){ 
+      block = command[2] - 48;
+      word = command[3] - 48;
+      if ((block > 9) || (block < 0)){
+        printf("Bad memory adress provided: %c%c%c%c.\nEnd of VM\n", command[0], command[1], command[2], command[3]);
         exit(1);
       }
     }
-    else {
-      if ((blokas <= 9) && (blokas >= 0)) { 
-        atmintis[psl[blokas]-1][zodis] = komanda[0]*0x1000000+komanda[1]*0x10000+komanda[2]*0x100+komanda[3];
-        zodis++;
-        if (zodis > 9) {
-          blokas++;
-          zodis = 0;
+    else{
+      if ((block <= 9) && (block >= 0)){ 
+        memory[page[block]-1][word] = command[0]*0x1000000+command[1]*0x10000+command[2]*0x100+command[3];
+        word++;
+        if (word > 9){
+          block++;
+          word = 0;
         }
       }
-      else {
-        printf("Komanda %c%c%c%c perzenge atminties ribas.\nVM darbo pabaiga.\n", komanda[0], komanda[1], komanda[2], komanda[3]);
-        
+      else{
+        printf("Command %c%c%c%c caused overflow\nEnd of VM\n", command[0], command[1], command[2], command[3]);
         exit(1);        
       }
     }

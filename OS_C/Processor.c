@@ -2,147 +2,159 @@
 #include <stdlib.h>
 #include "Processor.h"
 
-#define SKAICIUS 11
+#define number 11
 
-char komandos[SKAICIUS][2] = { { 'K', 'R' },    //Issaugo reiksme i registra R
-                               { 'S', 'R' },    //Registro R reiksme issaugo atmintyje
-                               { 'S', 'U' },    //Sudetis (registras + atmintis) 
-                               { 'A', 'T' },    //Atimtis (registras - atmintis)
-                               { 'S', 'A' },    //Sandauga (registras * atmintis)
-                               { 'P', 'R' },    //Palygina registra R su atminties reiksme
-                               { 'G', 'O' },    //valdymo perdavimas PC = 10x+y
-                               { 'P', 'T' },    //patikrina, ar registro C reiksme true
-                               { 'P', 'D' },    //isveda duomenis
-                               { 'R', 'D' },    //Skaito duomenis is isores
-                               { 'H', 'A' } };  //Halt - sustojimo komanda
-enum { kr = 0, sr, su, at, sa, pr, go, pt, pd, rd, ha };
+char commands[number][2] = { 
+ { 'L', 'R' }, //Reiksmes issaugojimas registre R
+ { 'S', 'R' },//Registro R reiksmes irasymas i atminti
+ { 'A', 'D' },//Sudetis (registras + memory) 
+ { 'S', 'U' },//Atimtis (registras - memory)
+ { 'M', 'U' },//Daugyba (registras * memory)
+ { 'P', 'R' },//Palygina registra R su atminties reiksme
+ { 'J', 'P' },//valdymo perdavimas PC = 10x+y
+ { 'J', 'T' },//patikrina, ar registro C reiksme true
+ { 'P', 'D' },//isveda duomenis
+ { 'R', 'D' },//Skaito duomenis is isores
+ { 'H', 'A' }//Halt - sustojimo komanda
+};  
+enum { LR = 0, SR, AD, SU, MU, pr, JP, JT, pd, rd, HA };
 
-long sudetis(long);
-long atimtis(long);
-long sandauga(long);
-void skaityti_duomenis(int, int);
-void vykdyti_komanda();
-void isvesti_duomenis(int, int);
+long addition(long);
+long substraction(long);
+long multiplication(long);
+void read_data(int, int);
+void executeCommand();
+void showData(int, int);
 
-//------------------------------------------------------------------------------
+
 short get_pc() {
   return PC; 
 }
-//------------------------------------------------------------------------------
-//Vykdo nuskaityta is atminties komanda pagal joje nurodytus parametrus
-void vykdyti_komanda(char* kom)
-{
+
+//executeCommand - komandos,nuskaitytos is atminties vykdymas
+void executeCommand(char* cmd){
   int i = 0;
   int m = 0;
-  //Paygina is atminties nuskaitytas komandas su apibreztomis
-  while ((i < SKAICIUS) && !m) { 
-    if (palyginti_komandas(kom, komandos[i], 2)) m = 1;
+  //Esamu ir nuskaitytu komandu palyginimas
+  while ((i < number) && !m) { 
+    if (compare_Commands(cmd, commands[i], 2)) m = 1;
     i++;
   }
   //
-  if (i > SKAICIUS-1) { 
-    printf("Tokia komanda neapibrezta: %c%c%c%c.\nVM darbo pabaiga.\n", kom[0], kom[1], kom[2], kom[3]);
-    
+  if (i > number-1) { 
+    printf("Undefined command: %c%c%c%c.\nEnd of VM\n", cmd[0], cmd[1], cmd[2], cmd[3]); 
     exit(1);    
   }
   
   //char - 48
-  int block = kom[2] - 48;
-  int field = kom[3] - 48;
+  int block = cmd[2] - 48;
+  int field = cmd[3] - 48;
   
-  switch (--i) { //vykdo komandas, isskyrus HALT
-    case kr: R = atmintis[psl[block]-1][field]; break;
-    case su: R = sudetis(atmintis[psl[block]-1][field]); break;
-    case at: R = atimtis(atmintis[psl[block]-1][field]); break;
-    case sa: R = sandauga(atmintis[psl[block]-1][field]); break;
-    case go: PC = block*10 + field; break;
-    case rd: skaityti_duomenis(block, 0); break;
-    case pr: C = (R == atmintis[psl[block]-1][field]); break;
-    case pt: if (C) PC = block*10 + field; break;
-    case pd: isvesti_duomenis(block, 0); break;
-    case sr: atmintis[psl[block]-1][field] = R; break;
+  //Komandu vykdymas
+  switch (--i){ 
+    case LR: R = memory[page[block]-1][field];
+	break;
+    case AD: R = addition(memory[page[block]-1][field]);
+	break;
+    case SU: R = substraction(memory[page[block]-1][field]);
+	break;
+    case MU: R = multiplication(memory[page[block]-1][field]);
+	break;
+    case JP: PC = block*10 + field;
+	break;
+    case rd: read_data(block, 0);
+	break;
+    case pr: C = (R == memory[page[block]-1][field]);
+	break;
+    case JT: if (C) PC = block*10 + field;
+	break;
+    case pd: showData(block, 0);
+	break;
+    case SR: memory[page[block]-1][field] = R;
+	break;
   }
 }
-//Isveda i ekrana registru turini desimtainiu pavidalu
-void rodyti_registrus() 
-{
-  printf("Registru reiksmes: \n");
+//Registru turiniu isvedimas i ekrana
+void show_Registers() {
+  printf("Registrers: \n");
   if (PC > 10) printf("   PC: %d\n", PC);
   else printf("   PC: 0%d\n", PC);
   printf("   C:  %d\n", C);
   printf("   R:  %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
 }
-//------------------------------------------------------------------------------
+
+
 //Duomenu apsikeitimas su isore (vyksta blokais)
-void skaityti_duomenis(int a, int b) {
-  char* simb = calloc(sizeof(char), 41);
+void read_data(int a, int b){
+  char* character = calloc(sizeof(char), 41);
   
-  fgets(simb, 40, stdin);
+  fgets(character, 40, stdin);
  
   int i;
-  for (i = 0; i < 40; i++) { //Pasalinami naujos eilutes simboliai
-    if (simb[i] == '\n') {
-      simb[i] = 0;
+  for (i = 0; i < 40; i++) {
+    //Naujos eilutes simboliu pasalinimas
+    if (character[i] == '\n') {
+      character[i] = 0;
       int j;
-      for (j = 0; j < (i%4)-1; j++) simb[i+j] = ' ';  //Uzpildo tarpo simboliais
+      //Tarpo uzpildymas simboliais
+      for (j = 0; j < (i%4)-1; j++) character[i+j] = ' ';  
     }
   }
-  
-  for (i = 0; i < 10; i++) {  //Nuskaitytus duomenis padeda i atminties bloka
-    atmintis[psl[a]-1][b+i] = simb[0+(4*i)]*0x1000000+simb[1+(4*i)]*0x10000+simb[2+(4*i)]*0x100+simb[3+(4*i)];
+
+  //Nuskaitytu duomenu sudejimas i bloka
+  for (i = 0; i < 10; i++){  
+    memory[page[a]-1][b+i] = character[0+(4*i)]*0x1000000+character[1+(4*i)]*0x10000+character[2+(4*i)]*0x100+character[3+(4*i)];
   } 
 }
-//------------------------------------------------------------------------------
-//Nuskaito komanda is atminties
-//ir padidina skaitliuko pc reiksme vienetu
-int sekanti_komanda() 
+
+//Komandos nuskaitymas is atminties, skaitliuko didinimas
+int nextCommand() 
 {
-  char komanda[4] = { (atmintis[psl[(PC/10)]-1][(PC%10)] & 0xFF000000) / 0x1000000, (atmintis[psl[(PC/10)]-1][(PC%10)] & 0xFF0000) / 0x10000, 
-                      (atmintis[psl[(PC/10)]-1][(PC%10)] & 0xFF00) / 0x100, (atmintis[psl[(PC/10)]-1][(PC%10)] & 0xFF) };
+  char command[4] = { (memory[page[(PC/10)]-1][(PC%10)] & 0xFF000000) / 0x1000000, (memory[page[(PC/10)]-1][(PC%10)] & 0xFF0000) / 0x10000, 
+                      (memory[page[(PC/10)]-1][(PC%10)] & 0xFF00) / 0x100, (memory[page[(PC/10)]-1][(PC%10)] & 0xFF) };
   PC++;
   
-  //Jeigu ne paskutine komanda, kuri yra stop
-  if (!palyginti_komandas(komandos[ha], komanda, 2)) {
-    vykdyti_komanda(komanda);
+  //Halt komanda
+  if (!compare_Commands(commands[HA], command, 2)){
+    executeCommand(command);
     return 1;
   } 
   else return 0; 
 }
-//------------------------------------------------------------------------------
-//Isveda duomenis i ekrana
-void isvesti_duomenis(int a, int b) {
+
+//Duomenu isvedimas i ekrana
+void showData(int a, int b){
   int i, j;
   for (i = 0; i < 10; i++) { 
-    if (atmintis[psl[a]-1][b+i] != 0) {
-      char duom[4] = { (atmintis[psl[a]-1][b+i] & 0xFF000000) / 0x1000000, (atmintis[psl[a]-1][b+i] & 0xFF0000) / 0x10000, 
-                       (atmintis[psl[a]-1][b+i] & 0xFF00) / 0x100, (atmintis[psl[a]-1][b+i] & 0xFF) };
+    if (memory[page[a]-1][b+i] != 0){
+      char data[4] = { (memory[page[a]-1][b+i] & 0xFF000000) / 0x1000000, (memory[page[a]-1][b+i] & 0xFF0000) / 0x10000, 
+                       (memory[page[a]-1][b+i] & 0xFF00) / 0x100, (memory[page[a]-1][b+i] & 0xFF) };
       
-      for (j = 0; j < 4; j++) printf("%c", duom[j]);
+      for (j = 0; j < 4; j++) printf("%c", data[j]);
     }                         
   }
   printf("\n");
 }
-//------------------------------------------------------------------------------
-//Registras R + atmintis su adresu adr
-long sudetis(long adr) {
+
+//Registras + atminties adresas
+long addition(long adr){
   
-  char reiksm1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
-  char reiksm2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF };  
+  char value1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
+  char value2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF };  
   
   //Gaunami desimtainiai skaiciai
-  int reiks1 = (reiksm1[0]-48)*1000 + (reiksm1[1]-48)*100 + (reiksm1[2]-48)*10 + reiksm1[3]-48;
-  int reiks2 = (reiksm2[0]-48)*1000 + (reiksm2[1]-48)*100 + (reiksm2[2]-48)*10 + reiksm2[3]-48;
-  int suma = reiks1 + reiks2;
+  int get_value_1 = (value1[0]-48)*1000 + (value1[1]-48)*100 + (value1[2]-48)*10 + value1[3]-48;
+  int get_value_2 = (value2[0]-48)*1000 + (value2[1]-48)*100 + (value2[2]-48)*10 + value2[3]-48;
+  int total_sum = get_value_1 + get_value_2;
   
-  if (suma > 9999) {
-    printf("Ivestu skaiciu suma virsijo 4 baitus (zodi).\nVM darbo pabaiga.\n");
-    
+  if (total_sum > 9999){
+    printf("Bad sum of input numbers - more than 4 bytes\nEnd of VM\n");
     exit(1);
   }
-  int sum1 = suma/1000;
-  int sum2 = (suma%1000)/100;
-  int sum3 = (suma%100)/10;
-  int sum4 = suma%10;   
+  int sum1 = total_sum/1000;
+  int sum2 = (total_sum%1000)/100;
+  int sum3 = (total_sum%100)/10;
+  int sum4 = total_sum%10;   
   sum1 = sum1 + 48;
   sum2 = sum2 + 48; 
   sum3 = sum3 + 48; 
@@ -150,65 +162,61 @@ long sudetis(long adr) {
   
   return (sum1 * 0x1000000 + sum2 * 0x10000 + sum3 * 0x100 + sum4);
 }
-//------------------------------------------------------------------------------
-//Grazina: registras R - atmintis su adresu adr
-long atimtis(long adr) { 
-   
-  char eil1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
-  char eil2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF }; 
-  
-  int sk1 = (eil1[0]-48)*1000 + (eil1[1]-48)*100 + (eil1[2]-48)*10 + eil1[3]-48;
-  int sk2 = (eil2[0]-48)*1000 + (eil2[1]-48)*100 + (eil2[2]-48)*10 + eil2[3]-48;
-  int skirtumas = sk1 - sk2;
-  
-  if (skirtumas < 0) {
-    printf("Klaidingai ivesti duomenys (pirmas skaicius mazesnis uz antra).\n");
-    
-    exit(1);
-  }
-  
-  int skirt1 = skirtumas/1000;
-  int skirt2 = (skirtumas%1000)/100;
-  int skirt3 = (skirtumas%100)/10;
-  int skirt4 = skirtumas%10;
-  
-  skirt1 = skirt1 + 48;
-  skirt2 = skirt2 + 48;
-  skirt3 = skirt3 + 48;
-  skirt4 = skirt4 + 48;
-  
-  long rez = skirt1 * 0x1000000 + skirt2 * 0x10000 + skirt3 * 0x100 + skirt4;
-  return rez;
-}
-//------------------------------------------------------------------------------
-long sandauga(long adr) { 
-   
-  char eil1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
-  char eil2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF }; 
-  
-  int sk1 = (eil1[0]-48)*1000 + (eil1[1]-48)*100 + (eil1[2]-48)*10 + eil1[3]-48;
-  int sk2 = (eil2[0]-48)*1000 + (eil2[1]-48)*100 + (eil2[2]-48)*10 + eil2[3]-48;
-  int sandauga = sk1 * sk2;
-  
-  if ((sk1 < 0) || (sk1 < 0) || (sandauga > 9999)) {
-    printf("Klaidingai ivesti skaiciai (neigiami arba ju sandauga > 9999).\n");
-    
-    exit(1);
-  }
-  else {
-    int sand1 = sandauga/1000;
-    int sand2 = (sandauga%1000)/100;
-    int sand3 = (sandauga%100)/10;
-    int sand4 = sandauga%10;
-    
-    sand1 = sand1 + 48;
-    sand2 = sand2 + 48;
-    sand3 = sand3 + 48;
-    sand4 = sand4 + 48;
-    
-    long rez = sand1 * 0x1000000 + sand2 * 0x10000 + sand3 * 0x100 + sand4;
-    return rez;
-  }
-}
-//------------------------------------------------------------------------------
 
+//substraction: registras - atmintis su adresu
+long substraction(long adr){ 
+   
+  char line1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
+  char line2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF }; 
+  
+  int nr_1 = (line1[0]-48)*1000 + (line1[1]-48)*100 + (line1[2]-48)*10 + line1[3]-48;
+  int nr_2 = (line2[0]-48)*1000 + (line2[1]-48)*100 + (line2[2]-48)*10 + line2[3]-48;
+  int substract = nr_1 - nr_2;
+  
+  if (substract < 0){
+    printf("Bad input of data\n");
+    exit(1);
+  }
+  
+  int minus1 = substract/1000;
+  int minus2 = (substract%1000)/100;
+  int minus3 = (substract%100)/10;
+  int minus4 = substract%10;
+  
+  minus1 = minus1 + 48;
+  minus2 = minus2 + 48;
+  minus3 = minus3 + 48;
+  minus4 = minus4 + 48;
+  
+  long result = minus1 * 0x1000000 + minus2 * 0x10000 + minus3 * 0x100 + minus4;
+  return result;
+}
+
+long multiplication(long adr){ 
+   
+  char line1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
+  char line2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF }; 
+  
+  int nr_1 = (line1[0]-48)*1000 + (line1[1]-48)*100 + (line1[2]-48)*10 + line1[3]-48;
+  int nr_2 = (line2[0]-48)*1000 + (line2[1]-48)*100 + (line2[2]-48)*10 + line2[3]-48;
+  int multiplication = nr_1 * nr_2;
+  
+  if ((nr_1 < 0) || (nr_1 < 0) || (multiplication > 9999)){
+    printf("Bad input of numbers\n");
+    exit(1);
+  }
+  else{
+    int mul1 = multiplication/1000;
+    int mul2 = (multiplication%1000)/100;
+    int mul3 = (multiplication%100)/10;
+    int mul4 = multiplication%10;
+    
+    mul1 = mul1 + 48;
+    mul2 = mul2 + 48;
+    mul3 = mul3 + 48;
+    mul4 = mul4 + 48;
+    
+    long result = mul1 * 0x1000000 + mul2 * 0x10000 + mul3 * 0x100 + mul4;
+    return result;
+  }
+}

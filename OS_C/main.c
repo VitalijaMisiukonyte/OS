@@ -3,69 +3,81 @@
 #include <stdlib.h>
 #include "Processor.h"
 #include "HardDisk.h"
-#include "atmintis.h"
+#include "Memory.h"
 
-char rezimas;
+char mode;
 
-int palyginti_komandas(char*, char*, int);
-void atidaryti_faila(char*);
-void nuskaityti_komandas(int);
+int compare_Commands(char*, char*, int);
+void openFile(char*);
+void scanCommands(int);
 
-//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 { 
-  int simb;
-  int pasirinkta = 0;
+  int character;
+  int choice = 0;
   
-  psl = isskirti_atminti();   
-  atidaryti_faila("programa.txt");       
+  page = allocate_Memory();   
+  openFile("programa.txt");       
            
-  printf("=== VIRTUALI MASINA ===\n");
-  printf("\nPasirinkite VM darbo rezima:\n1 - programos vykdymas is karto\n2 - programos vykdymas pazingsniniu rezimu\n");
-  while (!pasirinkta) {
-	char simb[1];
-      gets(simb);
-    switch (simb[0]){
-      case '1': rezimas = 'r'; pasirinkta = 1; break;
-      case '2': rezimas = 's'; pasirinkta = 1; break;
-      default: printf("Neteisingai pasirinktas VM darbo rezimas.\n");
+  printf("-----Virtual Machine-----");
+  printf("\nPlease choose virtual machine mode:\n1 - programm execution\n2 - execute programm step by step\n");
+  while(!choice){
+	char character[1];
+      gets(character);
+    switch (character[0]){
+      case '1': mode = 'r'; choice = 1; 
+	break;
+      case '2': mode = 's'; choice = 1;
+	break;
+      default: printf("Bad choice of mode!\n");
     }
   }
-  
-  if (rezimas == 'r') {  //prorama vykdoma is karto
+
+  //Programos vykdymas
+  if (mode == 'r') {  
     printf("\n");
-    while (sekanti_komanda());
+    while (nextCommand());
   }
-  else {                 //programa vykdoma pazingsniui
+  //Pazingsninis programos vykdymas
+  else {                 
     int end = 0;
-    printf("\n---Programos vykdymas pazingsniui---\n");
+    printf("\n---Programm execution step by step---\n");
     int step = 1;
+
     while (!end) {
-      printf("\n(%d zingsnis)_________________________________________\n ", step);
-      printf("Pasirinkite komandos numeri is saraso:\n");
-      printf("\t     1 - sekancios komandos vykdymas: ");
+      printf("\n_________________________________________\n ", step);
+      printf("Choose command number:\n");
+      printf("\t     1 - next command execution: ");
       short PC = get_pc();
-      char simb_pc[4] = { (atmintis[psl[(PC/10)-1]][PC%10] & 0xFF000000) / 0x1000000, (atmintis[psl[(PC/10)-1]][PC%10] & 0xFF0000) / 0x10000, 
-                          (atmintis[psl[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, (atmintis[psl[(PC/10)-1]][PC%10] & 0xFF) };
-      printf("%c%c%c%c\n", simb_pc[0], simb_pc[1], simb_pc[2], simb_pc[3]);
-      printf("\t     2 - atminties rodymas\n");
-      printf("\t     3 - registru rodymas\n");
-      printf("\t     4 - darbo nutraukimas\n");
-      printf("______________________________________________________\n\n");
-	char buffer[1];
+      char character_pc[4] = { (memory[page[(PC/10)-1]][PC%10] & 0xFF000000) / 0x1000000, (memory[page[(PC/10)-1]][PC%10] & 0xFF0000) / 0x10000, 
+                          (memory[page[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, (memory[page[(PC/10)-1]][PC%10] & 0xFF) };
+      printf("%c%c%c%c\n", character_pc[0], character_pc[1], character_pc[2], character_pc[3]);
+      printf("\t     2 - show memory\n");
+      printf("\t     3 - show registers\n");
+      printf("\t     4 - terminate\n");
+      printf("____________________________________________\n\n");
+      
+      char buffer[1];
       gets(buffer);
-      switch (buffer[0]) {
-        case '1': end = !sekanti_komanda(); step++; break;
-        case '3': rodyti_registrus(); break;
-        case '2': rodyti_atminti(); break;
-        case '4': end = 1; break;
-        default: printf("Neteisingai ivestas komandos numeris.\n");
+      switch (buffer[0]){
+        case '1': end = !nextCommand(); step++;
+	break;
+
+        case '2': show_Memory();
+	break;
+
+	case '3': show_Registers();
+	break;
+        
+	case '4': end = 1;
+	break;
+        default: printf("Bad command number\n");
       }
     }
-    printf("Programa baige darba.\n");
+    printf("End of processes\n");
   }
   	
   return 0;
 }
-//------------------------------------------------------------------------------
+
 
