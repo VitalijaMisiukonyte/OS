@@ -1,16 +1,11 @@
 # TODO + pastebejimai + Patarimai
 
 ## TODO
-1) uint/short/byte issiaiskinti
-2) Maven(make) ------------------- Gabrielius.
-3) Puslapiavimo mechanizmas ------ Gabrielius.
-4) Atmintis -----------------------Gabrielius.
-5) Pertraukimai ------------------ Edgariuks.
-6) Komanodos------------------------Edgaras ir Vitalija.
-7) Failu valdymo sistemos------------Rimvydas.
-8) Interpretatorius------------------Rimvydas.
-9) Exception klases------------------Edgaras.
-
+1) Prideti nauju komandu
+2) pakeisti isvedima, komentarus
+3) pakeisti funkciju, kintamuju vardus
+4) Perdaryti viska i anglu kalba
+5) Sutvarkyti struktura, kad nebutu viskas viename.
 ## Pastebejimai
 1) Ar naudosime buferi? Kol kas idedu kodo gabaliukus su juo. Jei nuspresim kad ne - galesime rasti kita varianta.
 2) Reikes pakeisti docsu faila, ideti SP registra ir i piesinuka taip pat.
