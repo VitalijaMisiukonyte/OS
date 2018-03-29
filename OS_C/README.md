@@ -6,7 +6,7 @@ TODO LISTAS
 
 3)Pakeisti isvedima (outputa) - Gabrielius
 
-4)Parasyt make, sutvarkit warningus - Gabrielius
+4)Parasyt make, sutvarkyti warningus - Gabrielius
 
 5)Sutvarkyti struktura, ?????? - Rimvydas, Gabrielius
 
