@@ -10,14 +10,14 @@ char commands[number][2] = {
  { 'A', 'D' },//Sudetis (registras + memory) 
  { 'S', 'U' },//Atimtis (registras - memory)
  { 'M', 'U' },//Daugyba (registras * memory)
- { 'P', 'R' },//Palygina registra R su atminties reiksme
+ { 'E', 'Q' },//Palygina registra R su atminties reiksme
  { 'J', 'P' },//valdymo perdavimas PC = 10x+y
  { 'J', 'T' },//patikrina, ar registro C reiksme true
- { 'P', 'D' },//isveda duomenis
- { 'R', 'D' },//Skaito duomenis is isores
+ { 'P', 'R' },//isveda duomenis
+ { 'I', 'N' },//Skaito duomenis is isores
  { 'H', 'A' }//Halt - sustojimo komanda
 };  
-enum { LR = 0, SR, AD, SU, MU, pr, JP, JT, pd, rd, HA };
+enum { LR = 0, SR, AD, SU, MU, EQ, JP, JT, PR, IN, HA };
 
 long addition(long);
 long substraction(long);
@@ -62,13 +62,13 @@ void executeCommand(char* cmd){
 	break;
     case JP: PC = block*10 + field;
 	break;
-    case rd: read_data(block, 0);
+    case IN: read_data(block, 0);
 	break;
-    case pr: C = (R == memory[page[block]-1][field]);
+    case EQ: C = (R == memory[page[block]-1][field]);
 	break;
     case JT: if (C) PC = block*10 + field;
 	break;
-    case pd: showData(block, 0);
+    case PR: showData(block, 0);
 	break;
     case SR: memory[page[block]-1][field] = R;
 	break;

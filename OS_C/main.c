@@ -22,15 +22,15 @@ int main(int argc, char *argv[])
   printf("-----Virtual Machine-----");
   printf("\nPlease choose virtual machine mode:\n1 - programm execution\n2 - execute programm step by step\n");
   while(!choice){
-	char character[1];
-      gets(character);
-    switch (character[0]){
-      case '1': mode = 'r'; choice = 1; 
-	break;
-      case '2': mode = 's'; choice = 1;
-	break;
-      default: printf("Bad choice of mode!\n");
-    }
+  	char character[1];
+	gets(character);
+    	switch (character[0]){
+      	  case '1': mode = 'r'; choice = 1; 
+	  break;
+          case '2': mode = 's'; choice = 1;
+	  break;
+          default: printf("Bad choice of mode!\n");
+        }
   }
 
   //Programos vykdymas
