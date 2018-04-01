@@ -4,7 +4,6 @@
 #include "Memory.h"
 #include "Processor.h"
 
-
 long* allocate_Memory(){
 //Puslpiu bloko adresas
   int paging_adr = 30;      
@@ -53,7 +52,6 @@ void show_Memory(){
   }
   printf("______________________________________________________\n");
 }
-
 
 //check_Memory, kurio paskirtis - tikrinti ar yra laisvas atminties laukas.
 int check_Memory(int x){

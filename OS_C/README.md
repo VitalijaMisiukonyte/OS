@@ -12,3 +12,9 @@ TODO LISTAS
 
 6)Pertraukimu mechanizmas
 
+7)Sutvarkyt arba istrint mode "r"
+
+8)Neigiami skaiciai
+
+9)SF sign bitas ir carry bitas
+

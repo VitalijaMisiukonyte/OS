@@ -2,22 +2,24 @@
 #include <stdlib.h>
 #include "Processor.h"
 
-#define number 11
+#define number 13
 
 char commands[number][2] = { 
- { 'L', 'R' }, //Reiksmes issaugojimas registre R
+ { 'L', 'R' },//Reiksmes issaugojimas registre R
  { 'S', 'R' },//Registro R reiksmes irasymas i atminti
  { 'A', 'D' },//Sudetis (registras + memory) 
  { 'S', 'U' },//Atimtis (registras - memory)
  { 'M', 'U' },//Daugyba (registras * memory)
- { 'E', 'Q' },//Palygina registra R su atminties reiksme
+ { 'C', 'R' },//Palygina registra R su atminties reiksme ir nustato SF
  { 'J', 'P' },//valdymo perdavimas PC = 10x+y
- { 'J', 'T' },//patikrina, ar registro C reiksme true
+ { 'J', 'M' },
+ { 'J', 'L' },
+ { 'J', 'E' },
  { 'P', 'R' },//isveda duomenis
  { 'I', 'N' },//Skaito duomenis is isores
- { 'H', 'A' }//Halt - sustojimo komanda
+ { 'H', 'A' } //Halt - sustojimo komanda
 };  
-enum { LR = 0, SR, AD, SU, MU, EQ, JP, JT, PR, IN, HA };
+enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, HA };
 
 long addition(long);
 long substraction(long);
@@ -26,8 +28,7 @@ void read_data(int, int);
 void executeCommand();
 void showData(int, int);
 
-
-short get_pc() {
+short get_pc(){
   return PC; 
 }
 
@@ -53,25 +54,35 @@ void executeCommand(char* cmd){
   //Komandu vykdymas
   switch (--i){ 
     case LR: R = memory[page[block]-1][field];
-	break;
+	           break;
     case AD: R = addition(memory[page[block]-1][field]);
-	break;
+	           break;
     case SU: R = substraction(memory[page[block]-1][field]);
-	break;
+	           break;
     case MU: R = multiplication(memory[page[block]-1][field]);
-	break;
+	           break;
     case JP: PC = block*10 + field;
-	break;
+	           break;
     case IN: read_data(block, 0);
-	break;
-    case EQ: C = (R == memory[page[block]-1][field]);
-	break;
-    case JT: if (C) PC = block*10 + field;
-	break;
+	           break;
+    /*
+    case CR: if (R > memory[page[block]-1][field]){
+                SF[5] = 1;
+             } else if (R < memory[page[block]-1][field]){
+                SF[6] = 1;
+             } else SF[7] = 1;
+	           break;
+    case JM: if (SF[5] = 1) PC = block*10 + field;
+             break;
+    case JL: if (SF[6] = 1) PC = block*10 + field;
+             break;
+    case JE: if (SF[7] = 1) PC = block*10 + field;
+             break;
+    */
     case PR: showData(block, 0);
-	break;
+	           break;
     case SR: memory[page[block]-1][field] = R;
-	break;
+	           break;
   }
 }
 //Registru turiniu isvedimas i ekrana
@@ -81,6 +92,8 @@ void show_Registers() {
   else printf("   PC: 0%d\n", PC);
   printf("   C:  %d\n", C);
   printf("   R:  %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
+  printf("   SF: %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
+  printf("\n");
 }
 
 

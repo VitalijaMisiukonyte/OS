@@ -1,4 +1,4 @@
-PROG
+STRT
 Suma
 MV20
 1234

@@ -11,8 +11,7 @@ int compare_Commands(char*, char*, int);
 void openFile(char*);
 void scanCommands(int);
 
-int main(int argc, char *argv[])
-{ 
+int main(int argc, char *argv[]){ 
   int character;
   int choice = 0;
   
@@ -26,15 +25,15 @@ int main(int argc, char *argv[])
 	gets(character);
     	switch (character[0]){
       	  case '1': mode = 'r'; choice = 1; 
-	  break;
+	                 break;
           case '2': mode = 's'; choice = 1;
-	  break;
+	                 break;
           default: printf("Bad choice of mode!\n");
         }
   }
 
   //Programos vykdymas
-  if (mode == 'r') {  
+  if (mode == 'r'){  
     printf("\n");
     while (nextCommand());
   }
@@ -44,13 +43,13 @@ int main(int argc, char *argv[])
     printf("\n---Programm execution step by step---\n");
     int step = 1;
 
-    while (!end) {
+    while (!end){
       printf("\n_________________________________________\n ", step);
       printf("Choose command number:\n");
       printf("\t     1 - next command execution: ");
       short PC = get_pc();
       char character_pc[4] = { (memory[page[(PC/10)-1]][PC%10] & 0xFF000000) / 0x1000000, (memory[page[(PC/10)-1]][PC%10] & 0xFF0000) / 0x10000, 
-                          (memory[page[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, (memory[page[(PC/10)-1]][PC%10] & 0xFF) };
+                              (memory[page[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, (memory[page[(PC/10)-1]][PC%10] & 0xFF) };
       printf("%c%c%c%c\n", character_pc[0], character_pc[1], character_pc[2], character_pc[3]);
       printf("\t     2 - show memory\n");
       printf("\t     3 - show registers\n");
@@ -61,16 +60,13 @@ int main(int argc, char *argv[])
       gets(buffer);
       switch (buffer[0]){
         case '1': end = !nextCommand(); step++;
-	break;
-
+	               break;
         case '2': show_Memory();
-	break;
-
-	case '3': show_Registers();
-	break;
-        
-	case '4': end = 1;
-	break;
+	               break;
+        case '3': show_Registers();
+	               break;
+        case '4': end = 1;
+	               break;
         default: printf("Bad command number\n");
       }
     }
