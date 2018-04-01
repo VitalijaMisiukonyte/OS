@@ -2,7 +2,8 @@
 #define FALSE 0
 
 static short PC = 0;              
-static char C = FALSE;            
+static char C = FALSE;
+static long SF = 0x00000000;            
 static long R = 0x30303030;       
 long* page;
 long memory[35][10];

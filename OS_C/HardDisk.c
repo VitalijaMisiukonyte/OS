@@ -5,7 +5,7 @@
 #include "HardDisk.h"
 
 char prog_header[4];
-char header_format[4] = { 'P', 'R', 'O', 'G' }; 
+char header_format[4] = { 'S', 'T', 'R', 'T' }; 
 char name[20];
 
 //compare_Commands. Paskirtis - masyvu lyginimas
@@ -57,7 +57,7 @@ void openFile(char* current_file){
   
   //Komandu (ne)buvimo tikrinimas
   if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
-    printf("There are no commands in programm!\nEnd of VM\n");
+    printf("There are no commands in the program!\nEnd of VM\n");
     
     exit(1);    
   }  
