@@ -3,7 +3,7 @@
 #include "Processor.h"
 #include "HardDisk.h"
 
-#define number 13
+#define number 14
 
 char commands[number][2] = { 
  { 'L', 'R' },//Reiksmes issaugojimas registre R
