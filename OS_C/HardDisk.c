@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include "Processor.h"
 #include "HardDisk.h"
 
@@ -28,7 +29,7 @@ void openFile(char* current_file){
     exit(1);
   } 
 
-  int bytes = read(file, prog_header, 4); 
+  read(file, prog_header, 4); 
   read(file, character, 1); 
   *character = 0;
 
@@ -56,6 +57,7 @@ void openFile(char* current_file){
   scanCommands(file); 
   
   //Komandu (ne)buvimo tikrinimas
+	short PC = get_pc();
   if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
     printf("There are no commands in the program!\nEnd of VM\n");
     
@@ -67,7 +69,7 @@ void openFile(char* current_file){
 
 void scanCommands(int handle){
   int block = 0, word = 0;
-  char ending_format[4] = { '.', 'E', 'N', 'D' };
+  char ending_format[4] = { 'S', 'T', 'O', 'P' };
   char command[4];
   
   //Komandu skaitymas is failo
@@ -75,7 +77,7 @@ void scanCommands(int handle){
     char s; 
     read(handle, &s, 1);
 
-    char command_MV[2] = { 'M', 'V' };
+    char command_MV[2] = { 'G', 'O' };
     if (compare_Commands(command, command_MV, 2)){ 
       block = command[2] - 48;
       word = command[3] - 48;

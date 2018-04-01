@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Processor.h"
+#include "HardDisk.h"
 
-#define number 14
+#define number 13
 
 char commands[number][2] = { 
  { 'L', 'R' },//Reiksmes issaugojimas registre R
@@ -17,10 +18,14 @@ char commands[number][2] = {
  { 'J', 'E' },
  { 'P', 'R' },//isveda duomenis
  { 'I', 'N' },//Skaito duomenis is isores
- { 'D', 'V' },//Dalyba
- { 'H', 'A' }//Halt - sustojimo komanda
+ { 'H', 'A' } //Halt - sustojimo komanda
 };  
-enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, HA };
+enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, HA };
+
+static short PC = 0;              
+static char C = FALSE;
+static long SF = 0x00000000;            
+static long R = 0x30303030; 
 
 long addition(long);
 long substraction(long);
@@ -28,7 +33,6 @@ long multiplication(long);
 void read_data(int, int);
 void executeCommand();
 void showData(int, int);
-long division(long);
 
 short get_pc(){
   return PC; 
@@ -45,7 +49,7 @@ void executeCommand(char* cmd){
   }
   //
   if (i > number-1) { 
-    printf("Undefined command: %c%c%c%c.\nEnd of VM\n", cmd[0], cmd[1], cmd[2], cmd[3]); 
+    printf("Undefined command: %c%c%c%c.\nQuitting Virtual Machine...\n", cmd[0], cmd[1], cmd[2], cmd[3]); 
     exit(1);    
   }
   
@@ -84,20 +88,20 @@ void executeCommand(char* cmd){
     case PR: showData(block, 0);
 	           break;
     case SR: memory[page[block]-1][field] = R;
-                   break;
-    case DV: R = division(memory[page[block]-1][field]);
-		   break;
+	           break;
   }
 }
 //Registru turiniu isvedimas i ekrana
 void show_Registers() {
+  printf("\n*******************************************************\n");
   printf("Registrers: \n");
   if (PC > 10) printf("   PC: %d\n", PC);
   else printf("   PC: 0%d\n", PC);
+  printf("   R:  %ld%ld%ld%ld\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
   printf("   C:  %d\n", C);
-  printf("   R:  %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
-  printf("   SF: %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
+  printf("   SF: %ld%ld%ld%ld\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
   printf("\n");
+  printf("\n*******************************************************\n");
 }
 
 
@@ -165,7 +169,7 @@ long addition(long adr){
   int total_sum = get_value_1 + get_value_2;
   
   if (total_sum > 9999){
-    printf("Bad sum of input numbers - more than 4 bytes\nEnd of VM\n");
+    printf("Bad sum of input numbers - more than 4 bytes\nQuitting Virtual Machine...\n");
     exit(1);
   }
   int sum1 = total_sum/1000;
@@ -237,7 +241,6 @@ long multiplication(long adr){
     return result;
   }
 }
-
 long division(long adr){ 
    
   char line1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };

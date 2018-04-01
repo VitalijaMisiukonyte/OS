@@ -34,23 +34,22 @@ long* allocate_Memory(){
 void show_Memory(){
   int i, j, k;
   
-  printf("Memory:\n");
   printf("Block/Word:\n");
   printf("     ");
   for (k = 0; k < 10; k++) printf("  %d  ", k);
-  printf("\n______________________________________________________\n");
+  printf("\n*******************************************************\n");
   for (i = 0; i < 35; i++){
     if (i < 10) printf("%d  | ", i);
     else printf("%d | ", i);
     for (j = 0; j < 10; j++){
-      if (memory[i][j] > 10) printf("%c%c%c%c ", (memory[i][j] & 0xFF000000) / 0x1000000, (memory[i][j] & 0xFF0000) / 0x10000, (memory[i][j] & 0xFF00) / 0x100, memory[i][j] & 0xFF); 
+      if (memory[i][j] > 10) printf("%ld%ld%ld%ld ", (memory[i][j] & 0xFF000000) / 0x1000000, (memory[i][j] & 0xFF0000) / 0x10000, (memory[i][j] & 0xFF00) / 0x100, memory[i][j] & 0xFF); 
       else if (memory[i][j] == 0) printf("0    ");
-           else if (memory[i][j] != 10) printf("%d    ", memory[i][j]);
+           else if (memory[i][j] != 10) printf("%ld    ", memory[i][j]);
                 else printf("10   ");
     }
     printf("\n");
   }
-  printf("______________________________________________________\n");
+  printf("\n*******************************************************\n");
 }
 
 //check_Memory, kurio paskirtis - tikrinti ar yra laisvas atminties laukas.
