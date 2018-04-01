@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "Processor.h"
 
-#define number 11
+#define number 12
 
 char commands[number][2] = { 
  { 'L', 'R' }, //Reiksmes issaugojimas registre R
@@ -15,9 +15,10 @@ char commands[number][2] = {
  { 'J', 'T' },//patikrina, ar registro C reiksme true
  { 'P', 'R' },//isveda duomenis
  { 'I', 'N' },//Skaito duomenis is isores
+ { 'D', 'V' },//Dalyba
  { 'H', 'A' }//Halt - sustojimo komanda
 };  
-enum { LR = 0, SR, AD, SU, MU, EQ, JP, JT, PR, IN, HA };
+enum { LR = 0, SR, AD, SU, MU, EQ, JP, JT, PR, IN, DV, HA };
 
 long addition(long);
 long substraction(long);
@@ -25,6 +26,7 @@ long multiplication(long);
 void read_data(int, int);
 void executeCommand();
 void showData(int, int);
+long division(long);
 
 
 short get_pc() {
@@ -71,6 +73,8 @@ void executeCommand(char* cmd){
     case PR: showData(block, 0);
 	break;
     case SR: memory[page[block]-1][field] = R;
+	break;
+    case DV: R = division(memory[page[block]-1][field]);
 	break;
   }
 }
@@ -217,6 +221,35 @@ long multiplication(long adr){
     mul4 = mul4 + 48;
     
     long result = mul1 * 0x1000000 + mul2 * 0x10000 + mul3 * 0x100 + mul4;
+    return result;
+  }
+}
+
+long division(long adr){ 
+   
+  char line1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
+  char line2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF }; 
+  
+  int nr_1 = (line1[0]-48)*1000 + (line1[1]-48)*100 + (line1[2]-48)*10 + line1[3]-48;
+  int nr_2 = (line2[0]-48)*1000 + (line2[1]-48)*100 + (line2[2]-48)*10 + line2[3]-48;
+  int division = nr_1 / nr_2;
+  
+  if ((nr_1 < 0) || (nr_1 < 0) || (division > 9999)){
+    printf("Bad input of numbers\n");
+    exit(1);
+  }
+  else{
+    int div1 = division/1000;
+    int div2 = (division%1000)/100;
+    int div3 = (division%100)/10;
+    int div4 = division%10;
+    
+    div1 = div1 + 48;
+    div2 = div2 + 48;
+    div3 = div3 + 48;
+    div4 = div4 + 48;
+    
+    long result = div1 * 0x1000000 + div2 * 0x10000 + div3 * 0x100 + div4;
     return result;
   }
 }
