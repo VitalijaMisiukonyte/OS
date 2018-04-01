@@ -16,11 +16,12 @@ char commands[number][2] = {
  { 'J', 'M' },
  { 'J', 'L' },
  { 'J', 'E' },
- { 'P', 'R' },//isveda duomenis
- { 'I', 'N' },//Skaito duomenis is isores
+ { 'P', 'R' }, //isveda duomenis
+ { 'I', 'N' }, //Skaito duomenis is isores
+ { 'D', 'V' }, //Dalyba
  { 'H', 'A' } //Halt - sustojimo komanda
 };  
-enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, HA };
+enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, HA };
 
 static short PC = 0;              
 static char C = FALSE;
@@ -33,6 +34,7 @@ long multiplication(long);
 void read_data(int, int);
 void executeCommand();
 void showData(int, int);
+long division(long);
 
 short get_pc(){
   return PC; 
@@ -89,6 +91,8 @@ void executeCommand(char* cmd){
 	           break;
     case SR: memory[page[block]-1][field] = R;
 	           break;
+   case DV: R = division(memory[page[block]-1][field]);
+		   break;
   }
 }
 //Registru turiniu isvedimas i ekrana
