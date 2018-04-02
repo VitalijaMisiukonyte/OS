@@ -7,7 +7,7 @@
 
 char prog_header[4];
 char header_format[4] = { 'S', 'T', 'R', 'T' }; 
-char name[20];
+char prog_name[4];
 
 //compare_Commands. Paskirtis - masyvu lyginimas
 int compare_Commands(char* array1, char* array2, int length){
@@ -41,8 +41,6 @@ void openFile(char* current_file){
     exit(EXIT_FAILURE);
   }
   
-  *character = 0;
-
   // Header check.
   if (!compare_Commands(prog_header, header_format, 4)) {
     printf("Bad header.\n" "Expected: %s\n" "Got: %s\n" "End of VM\n"
@@ -52,17 +50,24 @@ void openFile(char* current_file){
   
   //Komandu pavadinimu skaitymas
   // PROGRAMOS PAVADINOMO SKAITYMAS! NEMAISYKIT NES SUNKU DEBUGGINTI!
-  int i = 0; 
-  while (*character != '\n'){
+  // Kodel 20 simboliu? kaip mes toki aparata sutalpinsim i atminti?
+  // Neapsimoketu tiesiog nuskaityt pirmos 4 simbolius ir tiek ?
+  // Kur mes tai panaudosim? Programos iskvietime?
+
+  // Read program name.
+  *character = 0; // Clear char buffer
+
+  for(int i = 0; *character != '\n'; ++i){
     read(file, character, 1);
-    if (*character != '\n'){
-      name[i] = *character;
-      i++;
+
+    if (i > 4) { 
+      printf("Program name is too long.\n"
+             "Expected max length: 4\n"
+             "End of VM\n");
+      exit(EXIT_FAILURE);
     }
-    if (i > 20) { 
-      printf("Name of command is too long!\nEnd of VM\n");
-      exit(1);
-    }
+
+    if (*character != '\n') prog_name[i] = *character;
   }
   
   //Komandu nuskaitymas is isorines atminties i atminti
