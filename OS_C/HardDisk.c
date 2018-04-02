@@ -2,122 +2,107 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include "Processor.h"
 #include "HardDisk.h"
 
-char prog_header[4];
-char header_format[4] = { 'S', 'T', 'R', 'T' }; 
-char prog_name[4];
+char header_format[5] = { 'S', 'T', 'R', 'T', '\0' }; 
+char ending_format[4] = { 'S', 'T', 'O', 'P' };
+char prog_name[8];
+char* buffer = NULL;
+size_t len = 0;
 
-//compare_Commands. Paskirtis - masyvu lyginimas
+// Compare 2 arrays.
 int compare_Commands(char* array1, char* array2, int length){
-  int comparison = 1, j;
-  for (j = 0; j < length; j++){
-    if ((comparison) && (array1[j] != array2[j])) comparison = 0;
-  }
-  return comparison;
+  for (int j = 0; j < length; j++) 
+    if (array1[j] != array2[j]) 
+      return 0;
+  
+  return 1;
 }
 
 //openFile - failo atidarymas ir komandu skaitymas
 void openFile(char* current_file){
-  char* character = calloc(sizeof(char), 1);
-  
-  int file = open(current_file, O_RDONLY, 0); 
-   
-  if (file == -1){ 
+  FILE *fptr = fopen(current_file, "r");
+
+  if(fptr == NULL){
     printf("Failed to open file!\nEnd of VM\n");
     exit(EXIT_FAILURE);
   }
-  
+
   // First line should start with programam header
-  read(file, prog_header, 4);
-
-  // skip a pesky new line character
-  read(file, character, 1);
-
-  // if it is not -> bad header
-  if(*character != '\n'){
-    printf("Header length should be 4\nEnd of VM\n");
-    exit(EXIT_FAILURE);
-  }
+  getline(&buffer, &len, fptr);
+  buffer[strlen(buffer) - 1] = 0;
   
   // Header check.
-  if (!compare_Commands(prog_header, header_format, 4)) {
+  if (!compare_Commands(buffer, header_format, 4)) {
     printf("Bad header.\n" "Expected: %s\n" "Got: %s\n" "End of VM\n"
-                           ,header_format   ,prog_header);
+                           ,header_format   ,buffer);
     exit(EXIT_FAILURE);
   }
-  
-  //Komandu pavadinimu skaitymas
-  // PROGRAMOS PAVADINOMO SKAITYMAS! NEMAISYKIT NES SUNKU DEBUGGINTI!
-  // Kodel 20 simboliu? kaip mes toki aparata sutalpinsim i atminti?
-  // Neapsimoketu tiesiog nuskaityt pirmos 4 simbolius ir tiek ?
-  // Kur mes tai panaudosim? Programos iskvietime?
 
   // Read program name.
-  *character = 0; // Clear char buffer
+  getline(&buffer, &len, fptr);
 
-  for(int i = 0; *character != '\n'; ++i){
-    read(file, character, 1);
-
-    if (i > 4) { 
+  for(int i = 0; buffer[i] != '\n'; ++i){
+    if (i >= 8) { 
       printf("Program name is too long.\n"
-             "Expected max length: 4\n"
+             "Expected max length: 8\n"
              "End of VM\n");
       exit(EXIT_FAILURE);
     }
 
-    if (*character != '\n') prog_name[i] = *character;
+    prog_name[i] = buffer[i];
   }
+ 
+  //  
+  scanCommands(fptr); 
   
-  //Komandu nuskaitymas is isorines atminties i atminti
-  scanCommands(file); 
+ //  //Komandu (ne)buvimo tikrinimas
+ //  // MEMORY LEAK. THROW EXECPTION, NO CLOSE(FILE)
+
+	// short PC = get_pc();
+
+ //  if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
+ //    printf("There are no commands in the program!\nEnd of VM\n");
+ //    close(file);
+ //    exit(EXIT_FAILURE);    
+ //  }  
   
-  //Komandu (ne)buvimo tikrinimas
-  // MEMORY LEAK. THROW EXECPTION, NO CLOSE(FILE)
-	short PC = get_pc();
-  if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
-    printf("There are no commands in the program!\nEnd of VM\n");
-    
-    exit(1);    
-  }  
-  
-  close(file);
+ //  close(file);
 }
 
-void scanCommands(int handle){
-  int block = 0, word = 0;
-  char ending_format[4] = { 'S', 'T', 'O', 'P' };
-  char command[4];
-  
-  //Komandu skaitymas is failo
-  while ((read(handle, command, 4) != 0) && !compare_Commands(command, ending_format, 4)){ 
-    char s; 
-    read(handle, &s, 1);
-    // printf("%s\n", command);
+void scanCommands(FILE* fptr){
+  int block = 0;
+  int word  = 0;
 
-    char command_MV[2] = { 'G', 'O' };
-    if (compare_Commands(command, command_MV, 2)){ 
-      block = command[2] - 48;
-      word = command[3] - 48;
-      if ((block > 9) || (block < 0)){
-        printf("Bad memory adress provided: %c%c%c%c.\nEnd of VM\n", command[0], command[1], command[2], command[3]);
-        exit(1);
-      }
-    }
-    else{
-      if ((block <= 9) && (block >= 0)){ 
-        memory[page[block]-1][word] = command[0]*0x1000000+command[1]*0x10000+command[2]*0x100+command[3];
-        word++;
-        if (word > 9){
-          block++;
-          word = 0;
-        }
-      }
-      else{
-        printf("Command %c%c%c%c caused overflow\nEnd of VM\n", command[0], command[1], command[2], command[3]);
-        exit(1);        
-      }
-    }
+  void incr(){ word++; if((word %= 10) == 0) block++; }
+
+  //Komandu skaitymas is failo
+  while(getline(&buffer, &len, fptr) != -1){
+    buffer[strlen(buffer) - 1] = '\0';
+
+    if (strlen(buffer) == 6){ 
+      memory[block][word] =   buffer[0] * 0x10000000000
+                            + buffer[1] * 0x100000000
+                            + buffer[2] * 0x1000000
+                            + buffer[3] * 0x10000
+                            + buffer[4] * 0x100
+                            + buffer[5] * 0x1;
+
+      incr();
+
+    } else if(strlen(buffer) == 4) {
+      memory[block][word] =   buffer[0] * 0x1000000
+                            + buffer[1] * 0x10000
+                            + buffer[2] * 0x100
+                            + buffer[3] * 0x1;
+
+      incr();
+
+    }else{
+      printf("Bad format\n");
+      exit(EXIT_FAILURE);
+    } 
   }  
 }

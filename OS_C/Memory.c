@@ -36,16 +36,29 @@ void show_Memory(){
   
   printf("Block/Word:\n");
   printf("     ");
-  for (k = 0; k < 10; k++) printf("  %d  ", k);
+  for (k = 0; k < 10; k++) printf("  %d   ", k);
   printf("\n*******************************************************\n");
   for (i = 0; i < 35; i++){
     if (i < 10) printf("%d  | ", i);
     else printf("%d | ", i);
     for (j = 0; j < 10; j++){
-      if (memory[i][j] > 10) printf("%ld%ld%ld%ld ", (memory[i][j] & 0xFF000000) / 0x1000000, (memory[i][j] & 0xFF0000) / 0x10000, (memory[i][j] & 0xFF00) / 0x100, memory[i][j] & 0xFF); 
-      else if (memory[i][j] == 0) printf("0    ");
-           else if (memory[i][j] != 10) printf("%ld    ", memory[i][j]);
-                else printf("10   ");
+      if (memory[i][j] != 0){
+        char character[6] = {(memory[i][j] & 0xFF0000000000) / 0x10000000000,
+                             (memory[i][j] & 0xFF00000000) / 0x100000000,
+                             (memory[i][j] & 0xFF000000) / 0x1000000,
+                             (memory[i][j] & 0xFF0000) / 0x10000, 
+                             (memory[i][j] & 0xFF00) / 0x100, 
+                             (memory[i][j] & 0xFF)};
+
+        printf("%c%c%c%c%c%c ",   character[0], 
+                                  character[1], 
+                                  character[2], 
+                                  character[3],
+                                  character[4],
+                                  character[5]);
+      }else{
+        printf("0     ");
+      }
     }
     printf("\n");
   }

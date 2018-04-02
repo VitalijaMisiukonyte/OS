@@ -5,15 +5,10 @@
 #include "HardDisk.h"
 #include "Memory.h"
 
-int compare_Commands(char*, char*, int);
-void openFile(char*);
-void scanCommands(int);
-
-
 int main(int argc, char *argv[]){ 
   
   page = allocate_Memory();
-	//printf(">>>>>>>>>>>>>>>>>>>%d\n", page); //6310496 6310528  
+	// printf(">>>>>>>>>>>>>>>>>>>%d\n", page); //6310496 6310528  
   openFile("programa1.txt");       
            
   printf("*****Starting Virtual Machine*****\n");                
@@ -23,9 +18,19 @@ int main(int argc, char *argv[]){
       printf("Choose menu number:\n");
       printf("* 1 next command execution: ");
       short PC = get_pc();
-      char character_pc[4] = { (memory[page[(PC/10)-1]][PC%10] & 0xFF000000) / 0x1000000, (memory[page[(PC/10)-1]][PC%10] & 0xFF0000) / 0x10000, 
-                              (memory[page[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, (memory[page[(PC/10)-1]][PC%10] & 0xFF) };
-      printf("%c%c%c%c *\n", character_pc[0], character_pc[1], character_pc[2], character_pc[3]);
+      char character_pc[6] = {  (memory[page[(PC/10)-1]][PC%10] & 0xFF0000000000) / 0x10000000000,
+                                (memory[page[(PC/10)-1]][PC%10] & 0xFF00000000) / 0x100000000,
+                                (memory[page[(PC/10)-1]][PC%10] & 0xFF000000) / 0x1000000,
+                                (memory[page[(PC/10)-1]][PC%10] & 0xFF0000) / 0x10000, 
+                                (memory[page[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, 
+                                (memory[page[(PC/10)-1]][PC%10] & 0xFF) };
+      printf("%c%c%c%c%c%c *\n",  character_pc[0], 
+                                  character_pc[1], 
+                                  character_pc[2], 
+                                  character_pc[3],
+                                  character_pc[4],
+                                  character_pc[5]
+          );
       printf("* 2 Show registers *\n");
       printf("* 3 Show memory *\n");
       printf("* 4 Exit *\n");
@@ -41,7 +46,7 @@ int main(int argc, char *argv[]){
 	               break;
         case '2': show_Registers();
 	               break;
-	case '3': show_Memory();
+        case '3': show_Memory();
 	               break;
         case '4': end = 1;
 	               break;
