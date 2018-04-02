@@ -9,7 +9,9 @@ int main(int argc, char *argv[]){
   
   page = allocate_Memory();
 	// printf(">>>>>>>>>>>>>>>>>>>%d\n", page); //6310496 6310528  
-  openFile("programa.txt");       
+  openFile("programa.txt");
+
+         
 
            
   printf("*****Starting Virtual Machine*****\n");                

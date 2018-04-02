@@ -335,3 +335,24 @@ void set_memory(int i, int j, char* buffer){
                  + buffer[2] * 0x100
                  + buffer[3] * 0x1;
 }
+
+// void free_memory(int block){
+//   int paging_adr = 30;
+//   while (memory[paging_adr][0] != block) 
+//     if(paging_adr < 33)
+//       paging_adr++;
+//     else{
+//       printf("Can't find block: %d\n", block);
+//       exit(EXIT_FAILURE);
+//     }
+
+//   for (int i = 0; i < 10; ++i)
+//     memory[paging_adr][i] = 0;
+// }
+
+void free_memory(int paging_adr){
+  for (int i = 0; i < 10; ++i)
+  {
+    memory[paging_adr][i] = 0;
+  }
+}
