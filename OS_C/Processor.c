@@ -4,7 +4,7 @@
 #include "Processor.h"
 #include "HardDisk.h"
 
-#define number 15
+#define number 16
 
 char commands[number][2] = { 
  { 'L', 'R' },//Reiksmes issaugojimas registre R
@@ -21,14 +21,17 @@ char commands[number][2] = {
  { 'I', 'N' },//Skaito duomenis is isores
  { 'D', 'V' },//Dalyba
  { 'M', 'D' },//Moduline dalyba
- { 'H', 'A' } //Halt - sustojimo komanda
+ { 'H', 'A' }, //Halt - sustojimo komanda
+ { 'G', 'O' }
 };  
-enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, MD, HA };
+enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, MD, HA, GO };
 
 static short PC = 0;              
 static char C = FALSE;
 static long SF = 0x30303030;            
 static long R = 0x30303030; 
+int block_PC;
+int field_PC;
 
 long addition(long);
 long substraction(long);
@@ -38,11 +41,14 @@ void executeCommand();
 void showData(int, int);
 long division(long);
 long modular(long);
+void go();
 
 short get_pc(){
   return PC; 
 }
-
+void set_pc(int a){
+  PC = a; 
+}
 //executeCommand - komandos,nuskaitytos is atminties vykdymas
 void executeCommand(char* cmd){
   int i = 0;
@@ -54,17 +60,26 @@ void executeCommand(char* cmd){
   }
   //
   if (i > number-1) { 
-    printf("Undefined command: %c%c%c%c.\nQuitting Virtual Machine...\n", cmd[0], cmd[1], cmd[2], cmd[3]); 
-    exit(1);    
+    //printf("Undefined command: %c%c%c%c.\nQuitting Virtual Machine...\n", cmd[0], cmd[1], cmd[2], cmd[3]); 
+    //exit(1);
+    printf("Value: %c%c%c%c\n", cmd[0], cmd[1], cmd[2], cmd[3]);     
   }
   
   //char - 48
-  int block = cmd[2] - 48;
-  int field = cmd[3] - 48;
+  int block; 
+  int field;
+  //char - 48
+  if(cmd[2] == 'P' && cmd[3] == 'C'){
+	block = block_PC;
+	field = field_PC;
+  }else{
+	block = cmd[2] - 48;
+	field = cmd[3] - 48;
+  }
   
   //Komandu vykdymas
   switch (--i){ 
-    case LR: R = memory[page[block]-1][field];
+    case LR: R = memory[block][field];
 	           break;
     case AD: R = addition(memory[page[block]-1][field]);
 	           break;
@@ -94,7 +109,7 @@ void executeCommand(char* cmd){
               PC = block*10 + field;
             }
              break;
-    case PR: showData(block, 0);
+    case PR: showData(block, field);
 	           break;
     case SR: memory[page[block]-1][field] = R;
 	           break;
@@ -102,6 +117,7 @@ void executeCommand(char* cmd){
 		   break;
     case MD: R = modular(memory[page[block]-1][field]);
 		   break;
+   case GO: go(block, field); PC= PC + 1;break;
   }
 }
 //Registru turiniu isvedimas i ekrana
@@ -117,7 +133,38 @@ void show_Registers() {
   printf("\n*******************************************************\n");
 }
 
+void go(int block, int word){
 
+
+      char data[4] = { (memory[PC/10][PC%10] & 0xFF000000) / 0x1000000, (memory[PC/10][PC%10] & 0xFF0000) / 0x10000, 
+                       (memory[PC/10][PC%10] & 0xFF00) / 0x100, (memory[PC/10][PC%10] & 0xFF) };
+
+ 
+	printf(">>>>>>%ld %d\n",block, word);
+      if ((block <= 9) && (block >= 0)){
+	
+	 //printf(">>>>>>%c %c %c %c\n",data[0],data[1],data[2],data[3]);
+	//printf(">>>>>>%ld %d\n",PC/10, PC%10);
+	//printf(">>>>>>%d\n",command[0]*0x1000000+command[1]*0x10000+command[2]*0x100+command[3]);
+	
+        memory[block][word] = data[0]*0x1000000+data[1]*0x10000+data[2]*0x100+data[3];
+	//set_pc(block*10 + word);
+/*        word++;*/
+/*        if (word > 9){*/
+/*          block++;*/
+/*          word = 0;*/
+/*        }*/
+      }
+      else{
+        printf("Command %c%c%c%c caused overflow\nEnd of VM\n", data[0], data[1], data[2], data[3]);
+        exit(1);        
+      }
+    
+    
+
+
+
+}
 //Duomenu apsikeitimas su isore (vyksta blokais)
 void read_data(int a, int b){
   char* character = calloc(sizeof(char), 41);
@@ -144,8 +191,8 @@ void read_data(int a, int b){
 //Komandos nuskaitymas is atminties, skaitliuko didinimas
 int nextCommand() 
 {
-  char command[4] = { (memory[page[(PC/10)]-1][(PC%10)] & 0xFF000000) / 0x1000000, (memory[page[(PC/10)]-1][(PC%10)] & 0xFF0000) / 0x10000, 
-                      (memory[page[(PC/10)]-1][(PC%10)] & 0xFF00) / 0x100, (memory[page[(PC/10)]-1][(PC%10)] & 0xFF) };
+  char command[4] = { (memory[PC/10][PC%10] & 0xFF000000) / 0x1000000, (memory[PC/10][PC%10] & 0xFF0000) / 0x10000, 
+                       (memory[PC/10][PC%10] & 0xFF00) / 0x100, (memory[PC/10][PC%10] & 0xFF) };
   PC++;
   
   //Halt komanda
@@ -161,8 +208,8 @@ void showData(int a, int b){
   int i, j;
   for (i = 0; i < 10; i++) { 
     if (memory[page[a]-1][b+i] != 0){
-      char data[4] = { (memory[page[a]-1][b+i] & 0xFF000000) / 0x1000000, (memory[page[a]-1][b+i] & 0xFF0000) / 0x10000, 
-                       (memory[page[a]-1][b+i] & 0xFF00) / 0x100, (memory[page[a]-1][b+i] & 0xFF) };
+      char data[4] = { (memory[a][b+i] & 0xFF000000) / 0x1000000, (memory[a][b+i] & 0xFF0000) / 0x10000, 
+                       (memory[a][b+i] & 0xFF00) / 0x100, (memory[a][b+i] & 0xFF) };
       
       for (j = 0; j < 4; j++) printf("%c", data[j]);
     }                         
