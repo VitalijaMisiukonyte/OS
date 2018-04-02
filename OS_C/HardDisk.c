@@ -26,20 +26,32 @@ void openFile(char* current_file){
    
   if (file == -1){ 
     printf("Failed to open file!\nEnd of VM\n");
-    exit(1);
-  } 
+    exit(EXIT_FAILURE);
+  }
+  
+  // First line should start with programam header
+  read(file, prog_header, 4);
 
-  read(file, prog_header, 4); 
-  read(file, character, 1); 
+  // skip a pesky new line character
+  read(file, character, 1);
+
+  // if it is not -> bad header
+  if(*character != '\n'){
+    printf("Header length should be 4\nEnd of VM\n");
+    exit(EXIT_FAILURE);
+  }
+  
   *character = 0;
 
-  //Headerio tikrinimas
+  // Header check.
   if (!compare_Commands(prog_header, header_format, 4)) {
-    printf("Bad header.\nEnd of VM\n");
-    exit(1);
+    printf("Bad header.\n" "Expected: %s\n" "Got: %s\n" "End of VM\n"
+                           ,header_format   ,prog_header);
+    exit(EXIT_FAILURE);
   }
   
   //Komandu pavadinimu skaitymas
+  // PROGRAMOS PAVADINOMO SKAITYMAS! NEMAISYKIT NES SUNKU DEBUGGINTI!
   int i = 0; 
   while (*character != '\n'){
     read(file, character, 1);
@@ -57,6 +69,7 @@ void openFile(char* current_file){
   scanCommands(file); 
   
   //Komandu (ne)buvimo tikrinimas
+  // MEMORY LEAK. THROW EXECPTION, NO CLOSE(FILE)
 	short PC = get_pc();
   if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
     printf("There are no commands in the program!\nEnd of VM\n");
@@ -76,6 +89,7 @@ void scanCommands(int handle){
   while ((read(handle, command, 4) != 0) && !compare_Commands(command, ending_format, 4)){ 
     char s; 
     read(handle, &s, 1);
+    // printf("%s\n", command);
 
     char command_MV[2] = { 'G', 'O' };
     if (compare_Commands(command, command_MV, 2)){ 
