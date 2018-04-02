@@ -3,7 +3,7 @@
 #include "Processor.h"
 #include "HardDisk.h"
 
-#define number 14
+#define number 15
 
 char commands[number][2] = { 
  { 'L', 'R' },//Reiksmes issaugojimas registre R
@@ -19,9 +19,10 @@ char commands[number][2] = {
  { 'P', 'R' }, //isveda duomenis
  { 'I', 'N' }, //Skaito duomenis is isores
  { 'D', 'V' }, //Dalyba
+ { 'M', 'D' }, //Moduline dalyba
  { 'H', 'A' } //Halt - sustojimo komanda
 };  
-enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, HA };
+enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, MD, HA };
 
 static short PC = 0;              
 static char C = FALSE;
@@ -35,6 +36,7 @@ void read_data(int, int);
 void executeCommand();
 void showData(int, int);
 long division(long);
+long modular(long);
 
 short get_pc(){
   return PC; 
@@ -92,6 +94,8 @@ void executeCommand(char* cmd){
     case SR: memory[page[block]-1][field] = R;
 	           break;
    case DV: R = division(memory[page[block]-1][field]);
+		   break;
+   case MD: R = modular(memory[page[block]-1][field]);
 		   break;
   }
 }
@@ -270,6 +274,35 @@ long division(long adr){
     div4 = div4 + 48;
     
     long result = div1 * 0x1000000 + div2 * 0x10000 + div3 * 0x100 + div4;
+    return result;
+  }
+}
+
+long modular(long adr){ 
+   
+  char line1[4] = { (adr & 0xFF000000) / 0x1000000, (adr & 0xFF0000) / 0x10000, (adr & 0xFF00) / 0x100, adr & 0xFF };
+  char line2[4] = { (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF }; 
+  
+  int nr_1 = (line1[0]-48)*1000 + (line1[1]-48)*100 + (line1[2]-48)*10 + line1[3]-48;
+  int nr_2 = (line2[0]-48)*1000 + (line2[1]-48)*100 + (line2[2]-48)*10 + line2[3]-48;
+  int module = nr_1 % nr_2;
+  
+  if ((nr_1 < 0) || (nr_1 < 0) || (module > 9999)){
+    printf("Bad input of numbers\n");
+    exit(1);
+  }
+  else{
+    int mod1 = module/1000;
+    int mod2 = (module%1000)/100;
+    int mod3 = (module%100)/10;
+    int mod4 = module%10;
+    
+    mod1 = mod1 + 48;
+    mod2 = mod2 + 48;
+    mod3 = mod3 + 48;
+    mod4 = mod4 + 48;
+    
+    long result = mod1 * 0x1000000 + mod2 * 0x10000 + mod3 * 0x100 + mod4;
     return result;
   }
 }
