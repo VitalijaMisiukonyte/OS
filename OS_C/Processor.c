@@ -12,21 +12,21 @@ char commands[number][2] = {
  { 'S', 'U' },//Atimtis (registras - memory)
  { 'M', 'U' },//Daugyba (registras * memory)
  { 'C', 'R' },//Palygina registra R su atminties reiksme ir nustato SF
- { 'J', 'P' },//valdymo perdavimas PC = 10x+y
- { 'J', 'M' },
- { 'J', 'L' },
- { 'J', 'E' },
- { 'P', 'R' }, //isveda duomenis
- { 'I', 'N' }, //Skaito duomenis is isores
- { 'D', 'V' }, //Dalyba
- { 'M', 'D' }, //Moduline dalyba
+ { 'J', 'P' },//Valdymo perdavimas PC = 10x+y
+ { 'J', 'M' },//Jei SF flag'as M=1 perduoda valdyma PC = 10x+y
+ { 'J', 'L' },//Jei SF flag'as L=1 perduoda valdyma PC = 10x+y
+ { 'J', 'E' },//Jei SF flag'as E=1 perduoda valdyma PC = 10x+y
+ { 'P', 'R' },//Isveda duomenis
+ { 'I', 'N' },//Skaito duomenis is isores
+ { 'D', 'V' },//Dalyba
+ { 'M', 'D' },//Moduline dalyba
  { 'H', 'A' } //Halt - sustojimo komanda
 };  
 enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, MD, HA };
 
 static short PC = 0;              
 static char C = FALSE;
-static long SF = 0x00000000;            
+static long SF = 0x30303030;            
 static long R = 0x30303030; 
 
 long addition(long);
@@ -75,27 +75,31 @@ void executeCommand(char* cmd){
 	           break;
     case IN: read_data(block, 0);
 	           break;
-    /*
     case CR: if (R > memory[page[block]-1][field]){
-                SF[5] = 1;
+                SF = SF + 0x00010000;
              } else if (R < memory[page[block]-1][field]){
-                SF[6] = 1;
-             } else SF[7] = 1;
+                SF = SF + 0x00000100;
+             } else SF = SF + 0x00000001;;
 	           break;
-    case JM: if (SF[5] = 1) PC = block*10 + field;
+    case JM: if (SF & 0x00010000){
+              PC = block*10 + field;
+            }
              break;
-    case JL: if (SF[6] = 1) PC = block*10 + field;
+    case JL: if (SF & 0x00000100){
+              PC = block*10 + field;
+            }
              break;
-    case JE: if (SF[7] = 1) PC = block*10 + field;
+    case JE: if (SF & 0x00000001){
+              PC = block*10 + field;
+            }
              break;
-    */
     case PR: showData(block, 0);
 	           break;
     case SR: memory[page[block]-1][field] = R;
 	           break;
-   case DV: R = division(memory[page[block]-1][field]);
+    case DV: R = division(memory[page[block]-1][field]);
 		   break;
-   case MD: R = modular(memory[page[block]-1][field]);
+    case MD: R = modular(memory[page[block]-1][field]);
 		   break;
   }
 }
@@ -105,9 +109,9 @@ void show_Registers() {
   printf("Registrers: \n");
   if (PC > 10) printf("   PC: %d\n", PC);
   else printf("   PC: 0%d\n", PC);
-  printf("   R:  %c%c%c%c\n", (int)(R & 0xFF000000) / 0x1000000, (int)(R & 0xFF0000) / 0x10000, (int)(R & 0xFF00) / 0x100, (int)(R & 0xFF));
+  printf("   R:  %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
   printf("   C:  %d\n", C);
-  printf("   SF: %c%c%c%c\n", (int)(R & 0xFF000000) / 0x1000000, (int)(R & 0xFF0000) / 0x10000, (int)(R & 0xFF00) / 0x100, (int)(R & 0xFF));
+  printf("   SF: %c%c%c%c\n", (SF & 0xFF000000) / 0x1000000, (SF & 0xFF0000) / 0x10000, (SF & 0xFF00) / 0x100, SF & 0xFF);
   printf("\n");
   printf("\n*******************************************************\n");
 }
