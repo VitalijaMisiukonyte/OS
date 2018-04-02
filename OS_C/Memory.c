@@ -42,7 +42,7 @@ void show_Memory(){
     if (i < 10) printf("%d  | ", i);
     else printf("%d | ", i);
     for (j = 0; j < 10; j++){
-      if (memory[i][j] > 10) printf("%ld%ld%ld%ld ", (memory[i][j] & 0xFF000000) / 0x1000000, (memory[i][j] & 0xFF0000) / 0x10000, (memory[i][j] & 0xFF00) / 0x100, memory[i][j] & 0xFF); 
+      if (memory[i][j] > 10) printf("%c%c%c%c ", (memory[i][j] & 0xFF000000) / 0x1000000, (memory[i][j] & 0xFF0000) / 0x10000, (memory[i][j] & 0xFF00) / 0x100, memory[i][j] & 0xFF); 
       else if (memory[i][j] == 0) printf("0    ");
            else if (memory[i][j] != 10) printf("%ld    ", memory[i][j]);
                 else printf("10   ");
