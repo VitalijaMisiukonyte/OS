@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "Processor.h"
 #include "HardDisk.h"
 
@@ -309,4 +310,28 @@ long modular(long adr){
     long result = mod1 * 0x1000000 + mod2 * 0x10000 + mod3 * 0x100 + mod4;
     return result;
   }
+}
+
+// Puslapiu lentejei, iraso programos varda
+void set_program_name(char* name, int block){
+  int paging_adr = 30;
+  while (memory[paging_adr][0] != block) 
+    if(paging_adr < 33)
+      paging_adr++;
+    else{
+      printf("Can't set name\n");
+      exit(EXIT_FAILURE);
+    }
+
+  for (int i = 0,j = 6; i < strlen(name); i += 4){
+   set_memory(paging_adr, j, name + i);
+   j++; 
+  }
+}
+
+void set_memory(int i, int j, char* buffer){
+  memory[i][j] =   buffer[0] * 0x1000000
+                 + buffer[1] * 0x10000
+                 + buffer[2] * 0x100
+                 + buffer[3] * 0x1;
 }

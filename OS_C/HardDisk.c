@@ -7,8 +7,8 @@
 #include "HardDisk.h"
 
 char header_format[5] = { 'S', 'T', 'R', 'T', '\0' }; 
-char ending_format[4] = { 'S', 'T', 'O', 'P' };
-char prog_name[8];
+char ending_format[5] = { 'S', 'T', 'O', 'P', '\0' };
+char prog_name[16];
 char* buffer = NULL;
 size_t len = 0;
 
@@ -45,60 +45,43 @@ void openFile(char* current_file){
   getline(&buffer, &len, fptr);
 
   for(int i = 0; buffer[i] != '\n'; ++i){
-    if (i >= 8) { 
+    if (i >= 16) { 
       printf("Program name is too long.\n"
-             "Expected max length: 8\n"
+             "Expected max length: 16\n"
              "End of VM\n");
       exit(EXIT_FAILURE);
     }
 
     prog_name[i] = buffer[i];
   }
- 
-  //  
+
+  set_program_name(prog_name, page[0]);
+  
   scanCommands(fptr); 
-  
- //  //Komandu (ne)buvimo tikrinimas
- //  // MEMORY LEAK. THROW EXECPTION, NO CLOSE(FILE)
-
-	// short PC = get_pc();
-
- //  if ((PC == 0) && (memory[page[(PC/10)]-1][(PC%10)] == 0)) {
- //    printf("There are no commands in the program!\nEnd of VM\n");
- //    close(file);
- //    exit(EXIT_FAILURE);    
- //  }  
-  
- //  close(file);
 }
 
 void scanCommands(FILE* fptr){
   int block = 0;
   int word  = 0;
 
-  void incr(){ word++; if((word %= 10) == 0) block++; }
-
   //Komandu skaitymas is failo
   while(getline(&buffer, &len, fptr) != -1){
     buffer[strlen(buffer) - 1] = '\0';
 
-    if (strlen(buffer) == 6){ 
-      memory[block][word] =   buffer[0] * 0x10000000000
-                            + buffer[1] * 0x100000000
-                            + buffer[2] * 0x1000000
-                            + buffer[3] * 0x10000
-                            + buffer[4] * 0x100
-                            + buffer[5] * 0x1;
+    if(compare_Commands(buffer, ending_format, 4)) break;
 
-      incr();
+    if(strlen(buffer) == 4) {
+      
 
-    } else if(strlen(buffer) == 4) {
-      memory[block][word] =   buffer[0] * 0x1000000
-                            + buffer[1] * 0x10000
-                            + buffer[2] * 0x100
-                            + buffer[3] * 0x1;
+      set_memory(page[0] - 1 + block, word, buffer);
 
-      incr();
+      word ++;
+      if((word %= 10) == 0) block++;
+
+      if (block % 10 > 5){
+        printf("Not enough memory for program\n");
+        exit(EXIT_FAILURE);
+      }
 
     }else{
       printf("Bad format\n");
