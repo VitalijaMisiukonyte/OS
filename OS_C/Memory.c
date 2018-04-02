@@ -34,12 +34,12 @@ long* allocate_Memory(){
 void show_Memory(){
   int i, j, k;
   
-  printf("Block/Word:\n");
-  printf("     ");
+  printf("\nB/W");
   for (k = 0; k < 10; k++) printf("  %d  ", k);
   printf("\n*******************************************************\n");
   for (i = 0; i < 35; i++){
-    printf("%d  | ", i);
+    if (i < 10) printf("%d  | ", i);
+    else printf("%d | ", i);
     for (j = 0; j < 10; j++){
       if (memory[i][j] > 10) printf("%c%c%c%c ", (int)(memory[i][j] & 0xFF000000) / 0x1000000, (int)(memory[i][j] & 0xFF0000) / 0x10000, (int)(memory[i][j] & 0xFF00) / 0x100, (int)(memory[i][j] & 0xFF));
       else if (memory[i][j] == 0) printf("0    ");
