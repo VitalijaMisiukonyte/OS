@@ -1,0 +1,15 @@
+STRT
+Find		
+GO20		
+1111
+GO30		
+2222
+GO00 		
+LR18 		 		
+CR23		
+JM23		
+JL18		
+JE23		
+PRPC		
+HALT		 
+STOP		
