@@ -10,6 +10,7 @@ int main(int argc, char *argv[]){
   page = allocate_Memory();
 	// printf(">>>>>>>>>>>>>>>>>>>%d\n", page); //6310496 6310528  
   openFile("programa1.txt");       
+
            
   printf("*****Starting Virtual Machine*****\n");                
     int end = 0;
@@ -38,9 +39,9 @@ int main(int argc, char *argv[]){
       
       //char buffer[1];
       //gets(buffer);
-	char in;
-	scanf(" %c",&in);
-	getchar(); 
+      char in;
+      scanf(" %c",&in);
+      getchar(); 
       switch (in){
         case '1': end = !nextCommand();
 	               break;
