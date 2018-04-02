@@ -109,9 +109,9 @@ void show_Registers() {
   printf("Registrers: \n");
   if (PC > 10) printf("   PC: %d\n", PC);
   else printf("   PC: 0%d\n", PC);
-  printf("   R:  %c%c%c%c\n", (R & 0xFF000000) / 0x1000000, (R & 0xFF0000) / 0x10000, (R & 0xFF00) / 0x100, R & 0xFF);
+  printf("   R:  %c%c%c%c\n", (int)(R & 0xFF000000) / 0x1000000, (int)(R & 0xFF0000) / 0x10000, (int)(R & 0xFF00) / 0x100, (int)(R & 0xFF));
   printf("   C:  %d\n", C);
-  printf("   SF: %c%c%c%c\n", (SF & 0xFF000000) / 0x1000000, (SF & 0xFF0000) / 0x10000, (SF & 0xFF00) / 0x100, SF & 0xFF);
+  printf("   SF: %c%c%c%c\n", (int)(SF & 0xFF000000) / 0x1000000, (int)(SF & 0xFF0000) / 0x10000, (int)(SF & 0xFF00) / 0x100, (int)(SF & 0xFF));
   printf("\n");
   printf("\n*******************************************************\n");
 }
