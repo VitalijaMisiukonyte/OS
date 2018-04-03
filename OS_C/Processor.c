@@ -22,7 +22,7 @@ char commands[number][2] = {
  { 'D', 'V' },//Dalyba
  { 'M', 'D' },//Moduline dalyba
  { 'H', 'A' }, //Halt - sustojimo komanda
- { 'G', 'O' }
+ { 'G', 'O' } // GO - patalpina sekancius 4 baitus i nurodyta adresa
 };  
 enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, MD, HA, GO };
 
@@ -140,30 +140,14 @@ void go(int block, int word){
       char data[4] = { (memory[PC/10][PC%10] & 0xFF000000) / 0x1000000, (memory[PC/10][PC%10] & 0xFF0000) / 0x10000, 
                        (memory[PC/10][PC%10] & 0xFF00) / 0x100, (memory[PC/10][PC%10] & 0xFF) };
 
- 
-	//printf(">>>>>>%ld %d\n",block, word);
       if ((block <= 9) && (block >= 0)){
 	
-	 //printf(">>>>>>%c %c %c %c\n",data[0],data[1],data[2],data[3]);
-	//printf(">>>>>>%ld %d\n",PC/10, PC%10);
-	//printf(">>>>>>%d\n",command[0]*0x1000000+command[1]*0x10000+command[2]*0x100+command[3]);
-	
         memory[block][word] = data[0]*0x1000000+data[1]*0x10000+data[2]*0x100+data[3];
-	//set_pc(block*10 + word);
-/*        word++;*/
-/*        if (word > 9){*/
-/*          block++;*/
-/*          word = 0;*/
-/*        }*/
       }
       else{
         printf("Command %c%c%c%c caused overflow\nEnd of VM\n", data[0], data[1], data[2], data[3]);
         exit(1);        
       }
-    
-    
-
-
 
 }
 //Duomenu apsikeitimas su isore (vyksta blokais)
@@ -207,14 +191,11 @@ int nextCommand()
 //Duomenu isvedimas i ekrana
 void showData(int a, int b){
   int i=0;
-  //for (i = 0; i < 10; i++) { 
-    //if (memory[page[a]-1][b+i] != 0){
-      char data[4] = { (memory[a][b+i] & 0xFF000000) / 0x1000000, (memory[a][b+i] & 0xFF0000) / 0x10000, 
+  char data[4] = { (memory[a][b+i] & 0xFF000000) / 0x1000000, (memory[a][b+i] & 0xFF0000) / 0x10000, 
                        (memory[a][b+i] & 0xFF00) / 0x100, (memory[a][b+i] & 0xFF) };
       
-      for (int j = 0; j < 4; j++) printf("%c", data[j]);
-    //}                         
-  //}
+  for (int j = 0; j < 4; j++) printf("%c", data[j]);
+                            
   printf("\n");
 }
 

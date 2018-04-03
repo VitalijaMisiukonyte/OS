@@ -43,9 +43,7 @@ int check_Memory(int x){
 //show_Memory - parodo kaip atrodo atmintis 
 void show_Memory(){
   int i, j, k;
-  
-  printf("Block/Word:\n");
-  printf("     ");
+  printf("Bl/Wr");
   for (k = 0; k < 10; k++) printf("  %d  ", k);
   printf("\n*******************************************************\n");
   for (i = 0; i < 33; i++){
