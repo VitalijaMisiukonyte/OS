@@ -7,8 +7,7 @@
 
 int main(int argc, char *argv[]){ 
   
-  page = allocate_Memory();
-	// printf(">>>>>>>>>>>>>>>>>>>%d\n", page); //6310496 6310528  
+  page = allocate_Memory(); 
   openFile("programa1.txt");       
 
            
@@ -35,10 +34,6 @@ int main(int argc, char *argv[]){
       printf("* 2 Show registers *\n");
       printf("* 3 Show memory *\n");
       printf("* 4 Exit *\n");
-      //printf("____________________________________________\n\n");
-      
-      //char buffer[1];
-      //gets(buffer);
       char in;
       scanf(" %c",&in);
       getchar(); 
