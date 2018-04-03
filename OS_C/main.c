@@ -17,13 +17,13 @@ int main(int argc, char *argv[]){
     while (!end){
       printf("Choose menu number:\n");
       printf("* 1 next command execution: ");
-      short PC = get_pc();
-      char character_pc[6] = {  (memory[page[(PC/10)-1]][PC%10] & 0xFF0000000000) / 0x10000000000,
-                                (memory[page[(PC/10)-1]][PC%10] & 0xFF00000000) / 0x100000000,
-                                (memory[page[(PC/10)-1]][PC%10] & 0xFF000000) / 0x1000000,
-                                (memory[page[(PC/10)-1]][PC%10] & 0xFF0000) / 0x10000, 
-                                (memory[page[(PC/10)-1]][PC%10] & 0xFF00) / 0x100, 
-                                (memory[page[(PC/10)-1]][PC%10] & 0xFF) };
+      short PC = get_pc(); 
+      char character_pc[6] = {  (memory[PC/10][PC%10] & 0xFF0000000000) / 0x10000000000,
+                                (memory[PC/10][PC%10] & 0xFF00000000) / 0x100000000,
+                                (memory[PC/10][PC%10] & 0xFF000000) / 0x1000000,
+                                (memory[PC/10][PC%10] & 0xFF0000) / 0x10000, 
+                                (memory[PC/10][PC%10] & 0xFF00) / 0x100, 
+                                (memory[PC/10][PC%10] & 0xFF) };
       printf("%c%c%c%c%c%c *\n",  character_pc[0], 
                                   character_pc[1], 
                                   character_pc[2], 

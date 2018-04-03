@@ -55,8 +55,9 @@ void executeCommand(char* cmd){
   int m = 0;
   //Esamu ir nuskaitytu komandu palyginimas
   while ((i < number) && !m) { 
-    if (compare_Commands(cmd, commands[i], 2)) m = 1;
-    i++;
+    if (compare_Commands(cmd, commands[i], 2)){ m = 1; /* printf("!!!%d", i); */}
+    else
+    {i++;}
   }
   //
   if (i > number-1) { 
@@ -76,7 +77,7 @@ void executeCommand(char* cmd){
 	block = cmd[2] - 48;
 	field = cmd[3] - 48;
   }
-  
+  i++;
   //Komandu vykdymas
   switch (--i){ 
     case LR: R = memory[block][field];
@@ -140,7 +141,7 @@ void go(int block, int word){
                        (memory[PC/10][PC%10] & 0xFF00) / 0x100, (memory[PC/10][PC%10] & 0xFF) };
 
  
-	printf(">>>>>>%ld %d\n",block, word);
+	//printf(">>>>>>%ld %d\n",block, word);
       if ((block <= 9) && (block >= 0)){
 	
 	 //printf(">>>>>>%c %c %c %c\n",data[0],data[1],data[2],data[3]);
@@ -205,15 +206,15 @@ int nextCommand()
 
 //Duomenu isvedimas i ekrana
 void showData(int a, int b){
-  int i, j;
-  for (i = 0; i < 10; i++) { 
-    if (memory[page[a]-1][b+i] != 0){
+  int i=0;
+  //for (i = 0; i < 10; i++) { 
+    //if (memory[page[a]-1][b+i] != 0){
       char data[4] = { (memory[a][b+i] & 0xFF000000) / 0x1000000, (memory[a][b+i] & 0xFF0000) / 0x10000, 
                        (memory[a][b+i] & 0xFF00) / 0x100, (memory[a][b+i] & 0xFF) };
       
-      for (j = 0; j < 4; j++) printf("%c", data[j]);
-    }                         
-  }
+      for (int j = 0; j < 4; j++) printf("%c", data[j]);
+    //}                         
+  //}
   printf("\n");
 }
 
