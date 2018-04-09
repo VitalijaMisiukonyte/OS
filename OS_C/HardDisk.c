@@ -18,6 +18,7 @@ int compare_Commands(char* array1, char* array2, int length){
     if (array1[j] != array2[j]) 
       return 0;
   
+  
   return 1;
 }
 
@@ -36,9 +37,8 @@ void openFile(char* current_file){
   
   // Header check.
   if (!compare_Commands(buffer, header_format, 4)) {
-    printf("Bad header.\n" "Expected: %s\n" "Got: %s\n" "End of VM\n"
-                           ,header_format   ,buffer);
-    exit(EXIT_FAILURE);
+    set_PI(5);
+    return;
   }
 
   // Read program name.
@@ -68,7 +68,10 @@ void scanCommands(FILE* fptr){
   while(getline(&buffer, &len, fptr) != -1){
     buffer[strlen(buffer) - 1] = '\0';
 
-    if(compare_Commands(buffer, ending_format, 4)) break;
+    if(compare_Commands(buffer, ending_format, 4)){
+	set_PI(6);
+        return;
+    }
 
     if(strlen(buffer) == 4) {
       

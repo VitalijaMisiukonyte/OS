@@ -26,8 +26,9 @@ char commands[number][2] = {
 };  
 enum { LR = 0, SR, AD, SU, MU, CR, JP, JM, JL, JE, PR, IN, DV, MD, HA, GO };
 
+static short PI = 0;
+static short MODE = 0;
 static short PC = 0;              
-static char C = FALSE;
 static long SF = 0x30303030;            
 static long R = 0x30303030; 
 int PTR = 0;
@@ -37,6 +38,12 @@ int field_PC;
 
 void set_PTR(int value) { PTR = value; }
 int get_PTR() { return PTR; }
+
+void set_PI(int value) { PI = value; }
+int get_PI() { return PI; }
+
+void set_MODE(int value) { MODE = value; }
+int get_MODE() { return MODE; }
 
 long addition(long);
 long substraction(long);
@@ -60,21 +67,18 @@ void executeCommand(char* cmd){
   int m = 0;
   //Esamu ir nuskaitytu komandu palyginimas
   while ((i < number) && !m) { 
-    if (compare_Commands(cmd, commands[i], 2)){ m = 1; /* printf("!!!%d", i); */}
-    else
-    {i++;}
-  }
-  //
-  if (i > number-1) { 
-    //printf("Undefined command: %c%c%c%c.\nQuitting Virtual Machine...\n", cmd[0], cmd[1], cmd[2], cmd[3]); 
-    //exit(1);
-    printf("Value: %c%c%c%c\n", cmd[0], cmd[1], cmd[2], cmd[3]);     
+    if (compare_Commands(cmd, commands[i], 2)){ m = 1; }
+    else{i++;}
   }
   
-  //char - 48
+  if (i > number-1) { 
+    set_PI(1);
+    return;    
+  }
+  
   int block; 
   int field;
-  //char - 48
+  
   if(cmd[2] == 'P' && cmd[3] == 'C'){
 	block = block_PC;
 	field = field_PC;
@@ -125,16 +129,19 @@ void executeCommand(char* cmd){
 		   break;
    case GO: go(block, field); PC= PC + 1;break;
   }
+
+  if(0>PC || PC > sizeof(memory)/sizeof(memory[0])){set_PI(3);return;}
 }
 //Registru turiniu isvedimas i ekrana
 void show_Registers() {
   printf("\n*******************************************************\n");
-  printf("Registrers: \n");
+  printf("Registers: \n");
   if (PC > 10) printf("   PC: %d\n", PC);
   else printf("   PC: 0%d\n", PC);
   printf("   R:  %c%c%c%c\n", (int)(R & 0xFF000000) / 0x1000000, (int)(R & 0xFF0000) / 0x10000, (int)(R & 0xFF00) / 0x100, (int)(R & 0xFF));
-  printf("   C:  %d\n", C);
   printf("  SF:  %c%c%c%c\n", (int)(SF & 0xFF000000) / 0x1000000, (int)(SF & 0xFF0000) / 0x10000, (int)(SF & 0xFF00) / 0x100, (int)(SF & 0xFF));
+  printf("MODE:  %d\n", MODE );
+  printf("  PI:  %d\n", PI );
   printf(" PTR:  %d\n", PTR );
   printf("\n");
   printf("\n*******************************************************\n");
@@ -151,8 +158,8 @@ void go(int block, int word){
         memory[block][word] = data[0]*0x1000000+data[1]*0x10000+data[2]*0x100+data[3];
       }
       else{
-        printf("Command %c%c%c%c caused overflow\nEnd of VM\n", data[0], data[1], data[2], data[3]);
-        exit(1);        
+        set_PI(2);
+	return;
       }
 
 }
@@ -217,8 +224,8 @@ long addition(long adr){
   int total_sum = get_value_1 + get_value_2;
   
   if (total_sum > 9999){
-    printf("Bad sum of input numbers - more than 4 bytes\nQuitting Virtual Machine...\n");
-    exit(1);
+    set_PI(4);
+    return -1;
   }
   int sum1 = total_sum/1000;
   int sum2 = (total_sum%1000)/100;
@@ -243,8 +250,8 @@ long substraction(long adr){
   int substract = nr_1 - nr_2;
   
   if (substract < 0){
-    printf("Bad input of data\n");
-    exit(1);
+	set_PI(4);
+        return -1;
   }
   
   int minus1 = substract/1000;
@@ -271,8 +278,8 @@ long multiplication(long adr){
   int multiplication = nr_1 * nr_2;
   
   if ((nr_1 < 0) || (nr_1 < 0) || (multiplication > 9999)){
-    printf("Bad input of numbers\n");
-    exit(1);
+    set_PI(4);
+    return -1;
   }
   else{
     int mul1 = multiplication/1000;
@@ -296,11 +303,12 @@ long division(long adr){
   
   int nr_1 = (line1[0]-48)*1000 + (line1[1]-48)*100 + (line1[2]-48)*10 + line1[3]-48;
   int nr_2 = (line2[0]-48)*1000 + (line2[1]-48)*100 + (line2[2]-48)*10 + line2[3]-48;
+  if(nr_2 == 0){set_PI(7);return -1;}
   int division = nr_1 / nr_2;
   
   if ((nr_1 < 0) || (nr_1 < 0) || (division > 9999)){
-    printf("Bad input of numbers\n");
-    exit(1);
+    set_PI(4);
+    return -1;
   }
   else{
     int div1 = division/1000;
@@ -325,11 +333,12 @@ long modular(long adr){
   
   int nr_1 = (line1[0]-48)*1000 + (line1[1]-48)*100 + (line1[2]-48)*10 + line1[3]-48;
   int nr_2 = (line2[0]-48)*1000 + (line2[1]-48)*100 + (line2[2]-48)*10 + line2[3]-48;
+  if(nr_2 == 0){set_PI(7);return -1;}
   int module = nr_1 % nr_2;
   
   if ((nr_1 < 0) || (nr_1 < 0) || (module > 9999)){
-    printf("Bad input of numbers\n");
-    exit(1);
+    set_PI(4);
+    return -1;
   }
   else{
     int mod1 = module/1000;
@@ -345,6 +354,17 @@ long modular(long adr){
     long result = mod1 * 0x1000000 + mod2 * 0x10000 + mod3 * 0x100 + mod4;
     return result;
   }
+}
+
+int testInterrupt(){
+/*	int test;*/
+/*	if(x==1){test=IOI;IOI=0;}*/
+/*	else if(x==2){test=PI;PI=0;}*/
+/*	else if(x==3){test=SI;SI=0;}*/
+/*	else if(x==4){test=TI;TI=0;}*/
+/*	else if((IOI + PI + SI + TI) > 0){test=1}else{test=0;}	*/
+	if(PI>0){return PI;}else{return 0;}
+	
 }
 
 // Puslapiu lentejei, iraso programos varda
