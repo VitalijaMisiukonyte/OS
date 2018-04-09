@@ -6,14 +6,14 @@
 // Veikimo principas
 // Nuo 30 bloka prasideda puslapiu lentele
 // 
-long* allocate_Memory(){
+long* allocate_Memory(int *ptr){
 //Puslpiu bloko adresas
   int paging_adr = 30;      
   
   while ((memory[paging_adr][0] != 0) && (paging_adr < 33)) paging_adr++;  
   //Atmintyje nera laisvos vietos puslapiams
   if (memory[paging_adr][0] != 0) return 0; 
- 
+  *ptr = paging_adr;
   // Vieta kur prasideda programos kodas
   // skiriami 5 blokai
   int progr_adr = (paging_adr % 30) * 10 + 1;

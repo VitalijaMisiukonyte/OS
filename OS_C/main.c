@@ -6,8 +6,9 @@
 #include "Memory.h"
 
 int main(int argc, char *argv[]){ 
-  
-  page = allocate_Memory(); 
+  int ptr;
+  page = allocate_Memory(&ptr);
+  set_PTR(ptr); 
   openFile("programa1.txt");       
 
   printf("*****Starting Virtual Machine*****\n");                

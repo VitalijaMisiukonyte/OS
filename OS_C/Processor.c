@@ -30,13 +30,13 @@ static short PC = 0;
 static char C = FALSE;
 static long SF = 0x30303030;            
 static long R = 0x30303030; 
-long PTR = 0;
+int PTR = 0;
 
 int block_PC;
 int field_PC;
 
-void set_PTR(long value) { PTR = value; }
-long get_PTR() { return PTR; }
+void set_PTR(int value) { PTR = value; }
+int get_PTR() { return PTR; }
 
 long addition(long);
 long substraction(long);
@@ -134,7 +134,8 @@ void show_Registers() {
   else printf("   PC: 0%d\n", PC);
   printf("   R:  %c%c%c%c\n", (int)(R & 0xFF000000) / 0x1000000, (int)(R & 0xFF0000) / 0x10000, (int)(R & 0xFF00) / 0x100, (int)(R & 0xFF));
   printf("   C:  %d\n", C);
-  printf("   SF: %c%c%c%c\n", (int)(SF & 0xFF000000) / 0x1000000, (int)(SF & 0xFF0000) / 0x10000, (int)(SF & 0xFF00) / 0x100, (int)(SF & 0xFF));
+  printf("  SF:  %c%c%c%c\n", (int)(SF & 0xFF000000) / 0x1000000, (int)(SF & 0xFF0000) / 0x10000, (int)(SF & 0xFF00) / 0x100, (int)(SF & 0xFF));
+  printf(" PTR:  %d\n", PTR );
   printf("\n");
   printf("\n*******************************************************\n");
 }
