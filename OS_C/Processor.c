@@ -30,8 +30,13 @@ static short PC = 0;
 static char C = FALSE;
 static long SF = 0x30303030;            
 static long R = 0x30303030; 
+long PTR = 0;
+
 int block_PC;
 int field_PC;
+
+void set_PTR(long value) { PTR = value; }
+long get_PTR() { return PTR; }
 
 long addition(long);
 long substraction(long);
@@ -379,9 +384,9 @@ void set_memory(int i, int j, char* buffer){
 //     memory[paging_adr][i] = 0;
 // }
 
-void free_memory(int paging_adr){
+void free_memory(int PTR){
   for (int i = 0; i < 10; ++i)
   {
-    memory[paging_adr][i] = 0;
+    memory[PTR][i] = 0;
   }
 }
